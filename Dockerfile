@@ -15,13 +15,11 @@ RUN apt-get update \
   && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
   && echo "deb [ trusted=yes ] https://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list \
   && apt-get update \
-  && apt-get install -y apt-transport-https ca-certificates 
-
-RUN apt-get install -y curl \
+  && apt-get install -y apt-transport-https ca-certificates \
+  && apt-get install -y curl \
   && wget --quiet -O - https://deb.nodesource.com/setup_10.x | bash - \
-  && apt-get install -y nodejs
-
-RUN apt-get install -y --no-install-recommends \
+  && apt-get install -y nodejs \
+  && apt-get install -y --no-install-recommends \
   apache2 \
   apache2-dev \
   autoconf \
