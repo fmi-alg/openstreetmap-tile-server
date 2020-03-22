@@ -1,12 +1,12 @@
 #Similar to https://wiki.openstreetmap.org/wiki/Osm2pgsql/benchmarks#Ubuntu_18.04_planet_import
 
-shared_buffers = 32GB
+shared_buffers = 2GB
 work_mem = 1GB
-maintenance_work_mem = 8GB
+maintenance_work_mem = 1GB
 effective_io_concurrency = 500
-max_worker_processes = 12
-max_parallel_workers_per_gather = 4
-max_parallel_workers = 12
+max_worker_processes = 2
+max_parallel_workers_per_gather = 2
+max_parallel_workers = 2
 checkpoint_timeout = 10min
 max_wal_size = 10GB
 min_wal_size = 1GB
