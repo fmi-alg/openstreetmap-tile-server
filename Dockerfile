@@ -123,7 +123,7 @@ RUN mkdir -p /home/renderer/src \
 RUN mkdir -p /home/renderer/src \
  && cd /home/renderer/src \
  && git clone https://github.com/gravitystorm/openstreetmap-carto.git \
- && git -C openstreetmap-carto checkout v4.23.0 \
+ && git -C openstreetmap-carto checkout v4.25.0 \
  && cd openstreetmap-carto \
  && rm -rf .git \
  && npm install -g carto@0.18.2 \
