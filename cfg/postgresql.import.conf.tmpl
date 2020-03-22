@@ -1,0 +1,28 @@
+#Similar to https://wiki.openstreetmap.org/wiki/Osm2pgsql/benchmarks#Ubuntu_18.04_planet_import
+
+shared_buffers = 64GB
+work_mem = 4GB
+maintenance_work_mem = 16GB
+effective_io_concurrency = 500
+max_worker_processes = 12
+max_parallel_workers_per_gather = 4
+max_parallel_workers = 12
+checkpoint_timeout = 1h
+max_wal_size = 10GB
+min_wal_size = 1GB
+checkpoint_completion_target = 0.9
+random_page_cost = 1.1
+min_parallel_table_scan_size = 8MB
+min_parallel_index_scan_size = 512kB
+effective_cache_size = 64GB
+
+max_connections = 1024
+temp_buffers = 128MB
+wal_buffers = 1024kB
+wal_writer_delay = 500ms
+commit_delay = 10000
+track_activity_query_size = 16384
+autovacuum_vacuum_scale_factor = 0.05
+autovacuum_analyze_scale_factor = 0.02
+
+listen_addresses = '*'
