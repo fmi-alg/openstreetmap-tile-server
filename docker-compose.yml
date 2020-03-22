@@ -1,14 +1,33 @@
-version: '3'
+version: '3.6'
 
 services:
   map:
     image: dbahrdt/openstreetmap-tile-server
     volumes:
-      - openstreetmap-data:/var/lib/postgresql/12/main
+      - osm-tileserver-db:/var/lib/postgresql/12/main
+      - osm-tileserver-nodes:/nodes
+      - osm-tileserver-tiles:/var/lib/mod_tile
+      - ${PWD}/cfg/postgresql.serve.conf.tmpl:/etc/postgresql/12/main/postgresql.custom.conf.tmpl
+      - ${PWD}/scripts/render_list_geo.pl:/usr/bin/render_list_geo
+    environment:
+      - UPDATES=enabled
+      - THREADS=2
+      - OSM2PGSQL_EXTRA_ARGS=-C 1024 --flat-nodes /nodes/flat_nodes.bin
+      - ALLOW_CORS=enabled
     ports:
-      - "8080:80"
+      - "3080:80"
+    shm_size: 1G
     command: "run"
 
+configs:
+  postgres-import-cfg:
+    file: ./cfg/postgresql.import.conf.tmpl
+  postgres-prerender-cfg:
+    file: ./cfg/postgresql.prerender.conf.tmpl
+  postgres-serve-cfg:
+    file: ./cfg/postgresql.prerender.conf.tmpl
+
 volumes:
-  openstreetmap-data:
-    external: true
+  osm-tileserver-db: {}
+  osm-tileserver-nodes: {}
+  osm-tileserver-tiles: {}
