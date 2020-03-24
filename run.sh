@@ -12,6 +12,14 @@ function setPostgresPassword() {
     sudo -u postgres psql -c "ALTER USER renderer PASSWORD '${PGPASSWORD:-renderer}'"
 }
 
+
+#Setup log files
+chown root:root /var/log
+chmod +rwX /var/log
+mkdir -p /var/log/apache2 && chown -R www-data:www-data /var/log/apache2 || exit 1
+touch /var/log/renderd.log && chown renderer:renderer /var/log/renderd.log || exit 1
+mkdir -p /var/log/tiles && chown -R renderer:renderer /var/log/tiles || exit 1
+
 if [ "$#" -ne 1 ]; then
     echo "usage: <import|run>"
     echo "commands:"
