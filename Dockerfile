@@ -131,6 +131,15 @@ RUN mkdir -p /home/renderer/src \
  && scripts/get-shapefiles.py \
  && rm /home/renderer/src/openstreetmap-carto/data/*.zip
 
+# Install trim_osc.py helper script
+RUN mkdir -p /home/renderer/src \
+ && cd /home/renderer/src \
+ && git clone https://github.com/zverik/regional \
+ && cd regional \
+ && git checkout 612fe3e040d8bb70d2ab3b133f3b2cfc6c940520 \
+ && rm -rf .git \
+ && chmod u+x /home/renderer/src/regional/trim_osc.py
+
 # Configure renderd
 RUN sed -i 's/renderaccount/renderer/g' /usr/local/etc/renderd.conf \
  && sed -i 's/hot/tile/g' /usr/local/etc/renderd.conf
@@ -158,15 +167,6 @@ COPY openstreetmap-tiles-update-expire /usr/bin/
 RUN chmod +x /usr/bin/openstreetmap-tiles-update-expire \
  && ln -s /home/renderer/src/mod_tile/osmosis-db_replag /usr/bin/osmosis-db_replag \
  && echo "*  *    * * *   renderer    openstreetmap-tiles-update-expire\n" >> /etc/crontab
-
-# Install trim_osc.py helper script
-RUN mkdir -p /home/renderer/src \
- && cd /home/renderer/src \
- && git clone https://github.com/zverik/regional \
- && cd regional \
- && git checkout 612fe3e040d8bb70d2ab3b133f3b2cfc6c940520 \
- && rm -rf .git \
- && chmod u+x /home/renderer/src/regional/trim_osc.py
 
 # Copy renderd-daemon helper script
 COPY renderd-daemon.sh /usr/local/bin/renderd-daemon
