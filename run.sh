@@ -106,6 +106,9 @@ if [ "$1" = "run" ]; then
         echo "export APACHE_ARGUMENTS='-D ALLOW_CORS'" >> /etc/apache2/envvars
     fi
 
+    #Fix mod_tile data privileges
+    chown -R renderer:renderer /var/lib/mod_tile && chmod -R u=rwX,g=rX,o=rX /var/lib/mod_tile || exit 1
+
     # Initialize PostgreSQL and Apache
     createPostgresConfig
     service postgresql start
