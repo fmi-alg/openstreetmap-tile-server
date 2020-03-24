@@ -168,9 +168,9 @@ RUN mkdir -p /home/renderer/src \
  && rm -rf .git \
  && chmod u+x /home/renderer/src/regional/trim_osc.py
 
- #Copy renderd-daemon helper script
- COPY renderd-daemon.sh /usr/local/bin/renderd-daemon
- RUN chmod +x /usr/local/bin/renderd-daemon
+# Copy renderd-daemon helper script
+COPY renderd-daemon.sh /usr/local/bin/renderd-daemon
+RUN chmod +x /usr/local/bin/renderd-daemon
 
 # Start running
 COPY run.sh /
