@@ -126,7 +126,7 @@ if [ "$1" = "run" ]; then
     }
     trap stop_handler SIGTERM
 
-    sudo -u renderer renderd -f -c /usr/local/etc/renderd.conf &
+    sudo -u renderer /usr/local/bin/renderd-daemon &
     child=$!
     wait "$child"
 
