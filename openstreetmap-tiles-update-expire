@@ -2,6 +2,8 @@
 
 set -e
 
+source /etc/osmtileserver-options.sh
+
 #------------------------------------------------------------------------------
 # AJT - change directory to mod_tile directory so that we can run replag
 # and other things directly from this script when run from cron.
