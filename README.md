@@ -151,11 +151,11 @@ Details for update procedure and invoked scripts can be found here [link](https:
 
 ### THREADS
 
-The import and tile serving processes use 4 threads by default, but this number can be changed by setting the `THREADS` environment variable. For example:
+The import/tile serving/update processes use 2/1/1 threads by default, but this number can be changed by setting the `IMPORT_THREADS`/`RENDER_THREADS`/`UPDATE_THREADS` environment variable. For example:
 ```
 docker run \
     -p 8080:80 \
-    -e THREADS=24 \
+    -e IMPORT_THREADS=24 \
     -v openstreetmap-data:/var/lib/postgresql/12/main \
     -d overv/openstreetmap-tile-server \
     run

@@ -7,7 +7,7 @@ services:
     volumes:
       - ${PWD}/cfg/postgresql.import.conf.tmpl:/etc/postgresql/12/main/postgresql.custom.conf.tmpl
     environment:
-      - THREADS=8
+      - IMPORT_THREADS=8
       - OSM2PGSQL_EXTRA_ARGS=-C 8192 --flat-nodes /nodes/flat_nodes.bin
       - DOWNLOAD_PBF=http://download.geofabrik.de/europe/germany/baden-wuerttemberg/stuttgart-regbez-latest.osm.pbf
       - DOWNLOAD_POLY=http://download.geofabrik.de/europe/germany/baden-wuerttemberg/stuttgart-regbez.poly

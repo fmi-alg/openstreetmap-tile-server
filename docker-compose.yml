@@ -12,7 +12,9 @@ services:
       - ${PWD}/scripts/render_list_geo.pl:/usr/bin/render_list_geo
     environment:
       - UPDATES=enabled
-      - THREADS=2
+      - UPDATE_THREADS=1
+      - RENDER_THREADS=2
+      - IMPORT_THREADS=2
       - OSM2PGSQL_EXTRA_ARGS=-C 1024 --flat-nodes /nodes/flat_nodes.bin
       - ALLOW_CORS=enabled
     ports:
