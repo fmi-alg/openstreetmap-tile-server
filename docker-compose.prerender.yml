@@ -7,6 +7,6 @@ services:
     volumes:
       - ${PWD}/cfg/postgresql.prerender.conf.tmpl:/etc/postgresql/12/main/postgresql.custom.conf.tmpl
     environment:
-      - THREADS=4
+      - RENDER_THREADS=4
       - OSM2PGSQL_EXTRA_ARGS=-C 4096 --flat-nodes /nodes/flat_nodes.bin
     shm_size: 16G
