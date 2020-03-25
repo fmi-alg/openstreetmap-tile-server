@@ -12,6 +12,10 @@ function setPostgresPassword() {
     sudo -u postgres psql -c "ALTER USER renderer PASSWORD '${PGPASSWORD:-renderer}'"
 }
 
+#Make env vars permanent
+echo "#Global osmtileserver options" > /etc/osmtileserver-options.sh
+echo "OSM2PGSQL_EXTRA_ARGS=${OSM2PGSQL_EXTRA_ARGS}" >> /etc/osmtileserver-options.sh
+echo "THREADS=${THREADS}" >> /etc/osmtileserver-options.sh
 
 #Setup log files
 chown root:root /var/log
