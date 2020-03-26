@@ -29,8 +29,9 @@ touch /var/log/renderd.log && chown renderer:renderer /var/log/renderd.log || ex
 mkdir -p /var/log/tiles && chown -R renderer:renderer /var/log/tiles || exit 1
 
 if [ "$#" -ne 1 ]; then
-    echo "usage: <import|run>"
+    echo "usage: <import|run|clean>"
     echo "commands:"
+    echo "    clean: clean all persistent storage locations"
     echo "    import: Set up the database and import /data.osm.pbf"
     echo "    run: Runs Apache and renderd to serve tiles at /tile/{z}/{x}/{y}.png"
     echo "environment variables:"
@@ -39,6 +40,16 @@ if [ "$#" -ne 1 ]; then
     echo "    UPDATE_THREADS: defines number of threads used for updating"
     echo "    UPDATES: consecutive updates (enabled/disabled)"
     exit 1
+fi
+
+if [ "$1" = "clean" ]; then
+    echo "Cleaning all persistent storage locations"
+    rm -rf /var/lib/mod_tile/* > /dev/null 2>&1
+    rm -rf /var/lib/mod_tile/.osmosis > /dev/null 2>&1
+    rm -rf /var/lib/postgresql/12/main/* > /dev/null 2>&1
+    rm -rf /nodes/* > /dev/null 2>&1
+    rm -rf /debug/*  > /dev/null 2>&1
+    exit 0
 fi
 
 if [ "$1" = "import" ]; then
