@@ -24,7 +24,7 @@ OSM2PGSQL_BIN=osm2pgsql
 TRIM_BIN=/home/$ACCOUNT/src/regional/trim_osc.py
 
 DBNAME=gis
-OSM2PGSQL_OPTIONS="-d $DBNAME -G --hstore  ${OSM2PGSQL_EXTRA_ARGS} --tag-transform-script /home/renderer/src/openstreetmap-carto/openstreetmap-carto.lua --number-processes ${UPDATE_THREADS:-1} -S /home/renderer/src/openstreetmap-carto/openstreetmap-carto.style"
+OSM2PGSQL_OPTIONS=( -d $DBNAME -G --hstore  "${OSM2PGSQL_EXTRA_ARGS[@]}" --tag-transform-script /home/renderer/src/openstreetmap-carto/openstreetmap-carto.lua --number-processes ${UPDATE_THREADS:-1} -S /home/renderer/src/openstreetmap-carto/openstreetmap-carto.style )
 
 #------------------------------------------------------------------------------
 # When using trim_osc.py we can define either a bounding box (such as this
@@ -79,8 +79,8 @@ m_error()
     m_info "resetting state"
     /bin/cp $WORKOSM_DIR/last.state.txt $WORKOSM_DIR/state.txt || true
 
-    rm "$CHANGE_FILE" || true
-    rm "$EXPIRY_FILE.$$" || true
+    mv "$CHANGE_FILE" "$CHANGE_FILE.error" || true
+    mv "$EXPIRY_FILE.$$" "$EXPIRY_FILE.$$.error" || true
     rm "$LOCK_FILE"
     exit
 }
@@ -165,8 +165,9 @@ fi
 # tiles in range to the list (note the "-" rather than ":" in the "-e"
 # parameter).
 #------------------------------------------------------------------------------
-    if ! $OSM2PGSQL_BIN -a --slim -e$EXPIRY_MINZOOM-$EXPIRY_MAXZOOM $OSM2PGSQL_OPTIONS -o "$EXPIRY_FILE.$$" $CHANGE_FILE 1>&2 2> "$PGSQLLOG"; then
-        m_error "osm2pgsql error"
+    OSM2PGSQL_UPDATE_OPTIONS=( -a --slim -e$EXPIRY_MINZOOM-$EXPIRY_MAXZOOM "${OSM2PGSQL_OPTIONS[@]}" -o "$EXPIRY_FILE.$$" $CHANGE_FILE )
+    if ! $OSM2PGSQL_BIN "${OSM2PGSQL_UPDATE_OPTIONS[@]}" 1>&2 2> "$PGSQLLOG"; then
+        m_error "osm2pgsql error. Command run: ${OSM2PGSQL_UPDATE_OPTIONS[@]}"
     fi
 
 #------------------------------------------------------------------------------
