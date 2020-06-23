@@ -101,7 +101,7 @@ RUN adduser --disabled-password --gecos "" renderer
 # Install latest osm2pgsql
 RUN mkdir -p /home/renderer/src \
  && cd /home/renderer/src \
- && git clone https://github.com/openstreetmap/osm2pgsql.git \
+ && git clone -b master --depth 1 https://github.com/openstreetmap/osm2pgsql.git \
  && cd /home/renderer/src/osm2pgsql \
  && rm -rf .git \
  && mkdir build \
@@ -116,7 +116,7 @@ RUN mkdir -p /home/renderer/src \
 # Install mod_tile and renderd
 RUN mkdir -p /home/renderer/src \
  && cd /home/renderer/src \
- && git clone -b switch2osm https://github.com/SomeoneElseOSM/mod_tile.git \
+ && git clone -b switch2osm --depth 1 https://github.com/SomeoneElseOSM/mod_tile.git \
  && cd mod_tile \
  && ./autogen.sh \
  && ./configure \
