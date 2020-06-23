@@ -81,7 +81,7 @@ RUN apt-get update \
 
 #Instal latest osmosis
 RUN mkdir -p /opt/osmosis \
- && wget https://github.com/openstreetmap/osmosis/releases/download/0.47.4/osmosis-0.47.4.tgz -O /opt/osmosis/osmosis.tgz\
+ && wget https://github.com/openstreetmap/osmosis/releases/download/0.48.0/osmosis-0.48.0.tgz -O /opt/osmosis/osmosis.tgz\
  && tar xzf /opt/osmosis/osmosis.tgz -C /opt/osmosis \
  && rm /opt/osmosis/osmosis.tgz \
  && ln -s /opt/osmosis/bin/osmosis /usr/bin/osmosis
@@ -130,7 +130,7 @@ RUN mkdir -p /home/renderer/src \
 RUN mkdir -p /home/renderer/src \
  && cd /home/renderer/src \
  && git clone https://github.com/gravitystorm/openstreetmap-carto.git \
- && git -C openstreetmap-carto checkout v4.25.0 \
+ && git -C openstreetmap-carto checkout v5.2.0 \
  && cd openstreetmap-carto \
  && rm -rf .git \
  && npm install -g carto@0.18.2 \
