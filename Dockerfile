@@ -174,7 +174,7 @@ RUN chown -R postgres:postgres /var/lib/postgresql \
 COPY openstreetmap-tiles-update-expire /usr/bin/
 RUN chmod +x /usr/bin/openstreetmap-tiles-update-expire \
  && ln -s /home/renderer/src/mod_tile/osmosis-db_replag /usr/bin/osmosis-db_replag \
- && echo "0  *    * * *   renderer    openstreetmap-tiles-update-expire\n" >> /etc/crontab
+ && echo "0  *    * * *   renderer    openstreetmap-tiles-update-expire\n" >> /etc/crontab \
  && echo "30  *    * * *   renderer    openstreetmap-tiles-update-expire\n" >> /etc/crontab
 
 # Copy renderd-daemon helper script
