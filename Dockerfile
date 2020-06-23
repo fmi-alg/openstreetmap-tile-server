@@ -92,8 +92,11 @@ RUN wget http://download.osgeo.org/postgis/source/postgis-3.0.1.tar.gz -O postgi
  && tar -xvzf postgis.tar.gz --strip 1 -C postgis_src \
  && rm postgis.tar.gz \
  && cd postgis_src \
- && ./configure && make && make install \
- && cd .. && rm -rf postgis_src
+ && ./configure \
+ && make -j $(nproc) \
+ && make install \
+ && cd .. \
+ && rm -rf postgis_src
 
 # Set up renderer user
 RUN adduser --disabled-password --gecos "" renderer
