@@ -1,0 +1,7 @@
+#Use with docker-compose -f docker-compose.yml -f docker-compose.clean.yml up
+
+version: '3.6'
+
+services:
+  map:
+    command: "clean"
