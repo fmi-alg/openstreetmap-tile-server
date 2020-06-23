@@ -1,4 +1,4 @@
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 
 # Based on
 # https://switch2osm.org/manually-building-a-tile-server-18-04-lts/
@@ -11,13 +11,14 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # Install dependencies
 RUN apt-get update \
+  && apt-get -y dist-upgrade \
   && apt-get install wget gnupg2 lsb-core -y \
   && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
   && echo "deb [ trusted=yes ] https://apt.postgresql.org/pub/repos/apt/ `lsb_release -cs`-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list \
   && apt-get update \
   && apt-get install -y apt-transport-https ca-certificates \
   && apt-get install -y curl \
-  && wget --quiet -O - https://deb.nodesource.com/setup_10.x | bash - \
+  && wget --quiet -O - https://deb.nodesource.com/setup_14.x | bash - \
   && apt-get install -y nodejs \
   && apt-get install -y --no-install-recommends \
   apache2 \
@@ -45,20 +46,19 @@ RUN apt-get update \
   libgdal-dev \
   libgeos++-dev \
   libgeos-dev \
-  libgeotiff-epsg \
+  libgeotiff5 \
   libicu-dev \
   liblua5.3-dev \
   libmapnik-dev \
   libpq-dev \
   libproj-dev \
-  libprotobuf-c0-dev \
+  libprotobuf-c-dev \
   libtiff5-dev \
   libtool \
   libxml2-dev \
   lua5.3 \
   make \
   mapnik-utils \
-  node-gyp \
   osmium-tool \
   postgis \
   postgresql-12 \
@@ -75,9 +75,11 @@ RUN apt-get update \
   unzip \
   wget \
   zlib1g-dev \
-&& apt-get clean autoclean \
-&& apt-get autoremove --yes \
-&& rm -rf /var/lib/{apt,dpkg,cache,log}/
+  && apt-get clean autoclean \
+  && apt-get autoremove --yes \
+  && rm -rf /var/lib/{apt,dpkg,cache,log}/
+
+RUN npm install -g node-gyp carto@1.2.0
 
 #Instal latest osmosis
 RUN mkdir -p /opt/osmosis \
@@ -136,7 +138,6 @@ RUN mkdir -p /home/renderer/src \
  && git -C openstreetmap-carto checkout v5.2.0 \
  && cd openstreetmap-carto \
  && rm -rf .git \
- && npm install -g carto@0.18.2 \
  && carto project.mml > mapnik.xml \
  && scripts/get-shapefiles.py \
  && rm /home/renderer/src/openstreetmap-carto/data/*.zip
