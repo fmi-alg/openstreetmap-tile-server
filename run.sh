@@ -32,6 +32,7 @@ if [ "$#" -ne 1 ]; then
     echo "usage: <import|run|clean>"
     echo "commands:"
     echo "    clean: clean all persistent storage locations"
+    echo "    cleandb: clean data base files and osmosis status info"
     echo "    import: Set up the database and import /data.osm.pbf"
     echo "    run: Runs Apache and renderd to serve tiles at /tile/{z}/{x}/{y}.png"
     echo "environment variables:"
@@ -49,6 +50,13 @@ if [ "$1" = "clean" ]; then
     rm -rf /var/lib/postgresql/12/main/* > /dev/null 2>&1
     rm -rf /nodes/* > /dev/null 2>&1
     rm -rf /debug/*  > /dev/null 2>&1
+    exit 0
+fi
+
+if [ "$1" = "cleandb" ]; then
+    echo "Cleaning data base related files"
+    rm -rf /var/lib/mod_tile/.osmosis > /dev/null 2>&1
+    rm -rf /var/lib/postgresql/12/main/* > /dev/null 2>&1
     exit 0
 fi
 
