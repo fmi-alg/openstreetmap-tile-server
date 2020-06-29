@@ -12,4 +12,5 @@ services:
       - DOWNLOAD_PBF=http://download.geofabrik.de/europe/germany/baden-wuerttemberg/stuttgart-regbez-latest.osm.pbf
       - DOWNLOAD_POLY=http://download.geofabrik.de/europe/germany/baden-wuerttemberg/stuttgart-regbez.poly
     shm_size: 16G
+    restart: "no"
     command: "import"

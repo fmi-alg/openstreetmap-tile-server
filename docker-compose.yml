@@ -19,6 +19,7 @@ services:
       - ALLOW_CORS=enabled
     ports:
       - "3080:80"
+    restart: "on-failure"
     shm_size: 1G
     command: "run"
 
