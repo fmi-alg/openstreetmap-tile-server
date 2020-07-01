@@ -7,6 +7,7 @@ FROM ubuntu:20.04
 ENV TZ=UTC
 ENV AUTOVACUUM=on
 ENV UPDATES=disabled
+ENV POSTGRES_VERSION=10
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # Install dependencies
@@ -61,9 +62,9 @@ RUN apt-get update \
   mapnik-utils \
   osmium-tool \
   postgis \
-  postgresql-12 \
-  postgresql-contrib-12 \
-  postgresql-server-dev-12 \
+  postgresql-${POSTGRES_VERSION} \
+  postgresql-contrib-${POSTGRES_VERSION} \
+  postgresql-server-dev-${POSTGRES_VERSION} \
   protobuf-c-compiler \
   python3-mapnik \
   python3-lxml \
@@ -168,11 +169,14 @@ COPY apache.conf /etc/apache2/sites-available/000-default.conf
 COPY leaflet-demo.html /var/www/html/index.html
 
 # Configure PosgtreSQL
-COPY postgresql.custom.conf.tmpl /etc/postgresql/12/main/
+RUN mv /etc/postgresql/${POSTGRES_VERSION} /etc/postgresql/current \
+  && cd /etc/postgresql/ \
+  && ln -s current ${POSTGRES_VERSION}
+COPY postgresql.custom.conf.tmpl /etc/postgresql/current/main/
 RUN chown -R postgres:postgres /var/lib/postgresql \
- && chown postgres:postgres /etc/postgresql/12/main/postgresql.custom.conf.tmpl \
- && echo "host all all 0.0.0.0/0 md5" >> /etc/postgresql/12/main/pg_hba.conf \
- && echo "host all all ::/0 md5" >> /etc/postgresql/12/main/pg_hba.conf
+ && chown postgres:postgres /etc/postgresql/current/main/postgresql.custom.conf.tmpl \
+ && echo "host all all 0.0.0.0/0 md5" >> /etc/postgresql/current/main/pg_hba.conf \
+ && echo "host all all ::/0 md5" >> /etc/postgresql/current/main/pg_hba.conf
 
 # Copy update scripts
 COPY openstreetmap-tiles-update-expire /usr/bin/
@@ -186,6 +190,7 @@ COPY renderd-daemon.sh /usr/local/bin/renderd-daemon
 RUN chmod +x /usr/local/bin/renderd-daemon
 
 # Start running
+RUN echo "POSTGRES_VERSION=${POSTGRES_VERSION}" > /run.env.sh 
 COPY run.sh /
 COPY indexes.sql /
 ENTRYPOINT ["/run.sh"]

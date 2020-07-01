@@ -4,11 +4,11 @@ services:
   map:
     image: dbahrdt/openstreetmap-tile-server
     volumes:
-      - osm-tileserver-db:/var/lib/postgresql/12/main
+      - osm-tileserver-db:/var/lib/postgresql
       - osm-tileserver-nodes:/nodes
       - osm-tileserver-tiles:/var/lib/mod_tile
       - osm-tileserver-logs:/var/log
-      - ${PWD}/cfg/postgresql.serve.conf.tmpl:/etc/postgresql/12/main/postgresql.custom.conf.tmpl
+      - ${PWD}/cfg/postgresql.serve.conf.tmpl:/etc/postgresql/current/main/postgresql.custom.conf.tmpl
       - ${PWD}/scripts/render_list_geo.pl:/usr/bin/render_list_geo
     environment:
       - UPDATES=enabled
