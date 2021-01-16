@@ -84,13 +84,13 @@ RUN npm install -g node-gyp carto@1.2.0
 
 #Instal latest osmosis
 RUN mkdir -p /opt/osmosis \
- && wget https://github.com/openstreetmap/osmosis/releases/download/0.48.0/osmosis-0.48.0.tgz -O /opt/osmosis/osmosis.tgz\
+ && wget https://github.com/openstreetmap/osmosis/releases/download/0.48.3/osmosis-0.48.3.tgz -O /opt/osmosis/osmosis.tgz\
  && tar xzf /opt/osmosis/osmosis.tgz -C /opt/osmosis \
  && rm /opt/osmosis/osmosis.tgz \
  && ln -s /opt/osmosis/bin/osmosis /usr/bin/osmosis
 
 # Set up PostGIS
-RUN wget http://download.osgeo.org/postgis/source/postgis-3.0.1.tar.gz -O postgis.tar.gz \
+RUN wget http://download.osgeo.org/postgis/source/postgis-3.1.0.tar.gz -O postgis.tar.gz \
  && mkdir -p postgis_src \
  && tar -xvzf postgis.tar.gz --strip 1 -C postgis_src \
  && rm postgis.tar.gz \
