@@ -115,7 +115,12 @@ if [ "$1" = "import" ]; then
     fi
 
     # Import data
-    sudo -u renderer osm2pgsql -d gis --create --slim -G --hstore --tag-transform-script /home/renderer/src/openstreetmap-carto/openstreetmap-carto.lua --number-processes ${IMPORT_THREADS:-1} ${OSM2PGSQL_EXTRA_ARGS} -S /home/renderer/src/openstreetmap-carto/openstreetmap-carto.style /data.osm.pbf || exit 1
+    OSM2PGSQL_OPTIONS=( -d gis --create --slim -G --hstore --tag-transform-script /home/renderer/src/openstreetmap-carto/openstreetmap-carto.lua --number-processes ${IMPORT_THREADS:-1} "${OSM2PGSQL_EXTRA_ARGS[@]}" -S /home/renderer/src/openstreetmap-carto/openstreetmap-carto.style /data.osm.pbf )
+    if [ "$UPDATES" = "enabled" ]; then
+        sudo -u renderer osm2pgsql "${OSM2PGSQL_OPTIONS[@]}" || exit 1
+    else
+        sudo -u renderer osm2pgsql "${OSM2PGSQL_OPTIONS[@]}" --drop || exit 1
+    fi
 
     # Create indexes
     sudo -u postgres psql -d gis -f indexes.sql || exit 1
