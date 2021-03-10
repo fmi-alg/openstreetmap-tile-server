@@ -30,6 +30,9 @@ mkdir -p /var/log/apache2 && chown -R www-data:www-data /var/log/apache2 || exit
 touch /var/log/renderd.log && chown renderer:renderer /var/log/renderd.log || exit 1
 mkdir -p /var/log/tiles && chown -R renderer:renderer /var/log/tiles || exit 1
 
+#Fix permissions
+chown -R renderer:renderer /nodes /var/lib/mod_tile 
+
 if [ "$#" -ne 1 ]; then
     echo "usage: <import|run|clean>"
     echo "commands:"
