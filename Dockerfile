@@ -7,7 +7,7 @@ FROM ubuntu:20.04
 ENV TZ=UTC
 ENV AUTOVACUUM=on
 ENV UPDATES=disabled
-ENV POSTGRES_VERSION=10
+ENV POSTGRES_VERSION=13
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # Install dependencies
