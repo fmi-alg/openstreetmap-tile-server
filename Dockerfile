@@ -61,7 +61,6 @@ RUN apt-get update \
   make \
   mapnik-utils \
   osmium-tool \
-  postgis \
   postgresql-${POSTGRES_VERSION} \
   postgresql-contrib-${POSTGRES_VERSION} \
   postgresql-server-dev-${POSTGRES_VERSION} \
