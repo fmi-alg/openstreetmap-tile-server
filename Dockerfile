@@ -89,7 +89,7 @@ RUN mkdir -p /opt/osmosis \
  && ln -s /opt/osmosis/bin/osmosis /usr/bin/osmosis
 
 # Set up PostGIS
-RUN wget http://download.osgeo.org/postgis/source/postgis-3.1.0.tar.gz -O postgis.tar.gz \
+RUN wget http://download.osgeo.org/postgis/source/postgis-3.1.1.tar.gz -O postgis.tar.gz \
  && mkdir -p postgis_src \
  && tar -xvzf postgis.tar.gz --strip 1 -C postgis_src \
  && rm postgis.tar.gz \
