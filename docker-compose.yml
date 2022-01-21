@@ -4,6 +4,7 @@ services:
   map:
     image: dbahrdt/openstreetmap-tile-server
     volumes:
+      # Either use volumes which are also defined below or use host paths
       - osm-tileserver-db:/var/lib/postgresql
       - osm-tileserver-nodes:/nodes
       - osm-tileserver-tiles:/var/lib/mod_tile
@@ -15,6 +16,8 @@ services:
       - UPDATE_THREADS=1
       - RENDER_THREADS=2
       - IMPORT_THREADS=2
+      # If you import with flat nodes then you also have to set the flat nodes option during updates
+      # However you may change the memory usage (-C)
       - OSM2PGSQL_EXTRA_ARGS=-C 1024 --flat-nodes /nodes/flat_nodes.bin
       - ALLOW_CORS=enabled
     ports:
