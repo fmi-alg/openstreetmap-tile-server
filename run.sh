@@ -127,6 +127,11 @@ if [ "$1" = "import" ]; then
 
     # Register that data has changed for mod_tile caching purposes
     touch /var/lib/mod_tile/planet-import-complete
+    
+    # import shape files
+    pushd /home/renderer/src/openstreetmap-carto
+    scripts/get-external-data.py -d gis -U renderer -w "${PGPASSWORD:-renderer}" -H localhost -p 5432
+    popd
 
     service postgresql stop
 

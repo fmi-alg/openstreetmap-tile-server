@@ -68,7 +68,9 @@ RUN apt-get update \
   python3-mapnik \
   python3-lxml \
   python3-psycopg2 \
+  python3-requests \
   python3-shapely \
+  python3-yaml \
   sudo \
   tar \
   ttf-unifont \
@@ -135,12 +137,10 @@ RUN mkdir -p /home/renderer/src \
 RUN mkdir -p /home/renderer/src \
  && cd /home/renderer/src \
  && git clone https://github.com/gravitystorm/openstreetmap-carto.git \
- && git -C openstreetmap-carto checkout v5.2.0 \
+ && git -C openstreetmap-carto checkout v5.4.0 \
  && cd openstreetmap-carto \
  && rm -rf .git \
- && carto project.mml > mapnik.xml \
- && scripts/get-shapefiles.py \
- && rm /home/renderer/src/openstreetmap-carto/data/*.zip
+ && carto project.mml > mapnik.xml
 
 # Install trim_osc.py helper script
 RUN mkdir -p /home/renderer/src \
