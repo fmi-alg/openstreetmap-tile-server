@@ -9,8 +9,8 @@ services:
     environment:
       - IMPORT_THREADS=8
       - OSM2PGSQL_EXTRA_ARGS=-C 8192 --flat-nodes /nodes/flat_nodes.bin
-      - DOWNLOAD_PBF=http://download.geofabrik.de/europe/germany/baden-wuerttemberg/stuttgart-regbez-latest.osm.pbf
-      - DOWNLOAD_POLY=http://download.geofabrik.de/europe/germany/baden-wuerttemberg/stuttgart-regbez.poly
+      - DOWNLOAD_PBF=http://download.geofabrik.de/europe/andorra-latest.osm.pbf
+      - DOWNLOAD_POLY=http://download.geofabrik.de/europe/andorra.poly
     shm_size: 16G
     restart: "no"
     command: "import"
