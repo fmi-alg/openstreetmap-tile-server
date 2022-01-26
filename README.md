@@ -29,6 +29,8 @@ docker-compose -f docker-compose.yml -f docker-compose.import.yml up
 ```
 
 This will download the file as specified by the `DOWNLOAD_PBF` variable and import the data into the database.
+You may also provide the data if you have already downloaded it.
+See `docker-compose.import.yml` for instructions.
 Note that you have to set the `UPDATE` option to `enabled` during the initial import if you want to update the database at a later stage.
 
 ## Pre-render data
