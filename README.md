@@ -17,6 +17,7 @@ Configure the docker-compose file according to your needs.
 At the minimum you only have to edit the uri in `docker-compose.import.yml`.
 However you may want to define host paths to store data instead of using volumes.
 You also may want to change the allocated resources like maximum memory usage or number of threads.
+See `docker-compose.yml` for instructions.
 
 ## Importing data
 
