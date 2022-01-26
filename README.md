@@ -50,6 +50,16 @@ You can use the render_list_geo script to select the tiles to be rendered:
 docker-compose exec map /usr/bin/render_list_geo -h
 ```
 
+To render all tiles of Andorra up to zoom level 18 with 4 threads:
+
+```bash
+docker-compose exec map /usr/bin/render_list_geo -m ajt -n 4 -x 1.4135781 -X 1.7863837 -y 42.4288238 -Y 42.6559357 -z 0 -Z 18
+```
+
+Note the option `-m ajt` which is needed to select the correct map.
+The map name is defined in `/usr/local/etc/renderd.conf`.
+You can find bounding boxes for countries at the following [gist](https://gist.github.com/graydon/11198540).
+
 ## Serving tiles
 
 In order to serve tiles you have to edit the files `docker-compose.yml` and `cfg/postgresql.serve.conf.tmpl` to your needs.
