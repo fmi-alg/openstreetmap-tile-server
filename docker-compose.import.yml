@@ -5,7 +5,7 @@ version: '3.6'
 services:
   map:
     volumes:
-      - ${PWD}/cfg/postgresql.import.conf.tmpl:/etc/postgresql/current/main/postgresql.custom.conf.tmpl
+      - ./cfg/postgresql.import.conf.tmpl:/etc/postgresql/current/main/postgresql.custom.conf.tmpl
     environment:
       - IMPORT_THREADS=8
       - OSM2PGSQL_EXTRA_ARGS=-C 8192 --flat-nodes /nodes/flat_nodes.bin

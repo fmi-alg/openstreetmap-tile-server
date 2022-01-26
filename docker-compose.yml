@@ -9,8 +9,8 @@ services:
       - osm-tileserver-nodes:/nodes
       - osm-tileserver-tiles:/var/lib/mod_tile
       - osm-tileserver-logs:/var/log
-      - ${PWD}/cfg/postgresql.serve.conf.tmpl:/etc/postgresql/current/main/postgresql.custom.conf.tmpl
-      - ${PWD}/scripts/render_list_geo.pl:/usr/bin/render_list_geo
+      - ./cfg/postgresql.serve.conf.tmpl:/etc/postgresql/current/main/postgresql.custom.conf.tmpl
+      - ./scripts/render_list_geo.pl:/usr/bin/render_list_geo
     environment:
       - UPDATES=enabled
       - UPDATE_THREADS=1
