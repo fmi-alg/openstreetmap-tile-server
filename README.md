@@ -42,7 +42,7 @@ You likely want to increase the used resources during pre-rendering to speed up 
 Start the server:
 
 ```bash
-docker-compose -f docker-compose.yml -f docker-compose.import.yml up -d
+docker-compose -f docker-compose.yml -f docker-compose.prerender.yml up -d
 ```
 
 You can use the render_list_geo script to select the tiles to be rendered:
