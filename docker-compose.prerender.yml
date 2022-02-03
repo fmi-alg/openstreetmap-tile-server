@@ -5,8 +5,8 @@ version: '3.6'
 services:
   map:
     volumes:
-      - ${PWD}/cfg/postgresql.prerender.conf.tmpl:/etc/postgresql/current/main/postgresql.custom.conf.tmpl
-      - ${PWD}/scripts/render_list_geo.pl:/usr/bin/render_list_geo
+      - ./cfg/postgresql.prerender.conf.tmpl:/etc/postgresql/current/main/postgresql.custom.conf.tmpl
+      - ./scripts/render_list_geo.pl:/usr/bin/render_list_geo
     environment:
       - RENDER_THREADS=4
       - OSM2PGSQL_EXTRA_ARGS=-C 4096 --flat-nodes /nodes/flat_nodes.bin
