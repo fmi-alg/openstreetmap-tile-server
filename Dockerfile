@@ -54,6 +54,7 @@ RUN apt-get update \
   libpq-dev \
   libproj-dev \
   libprotobuf-c-dev \
+  libprotobuf-dev \
   libtiff5-dev \
   libtool \
   libxml2-dev \
@@ -65,6 +66,7 @@ RUN apt-get update \
   postgresql-contrib-${POSTGRES_VERSION} \
   postgresql-server-dev-${POSTGRES_VERSION} \
   protobuf-c-compiler \
+  protobuf-compiler \
   python3-mapnik \
   python3-lxml \
   python3-psycopg2 \
@@ -150,6 +152,17 @@ RUN mkdir -p /home/renderer/src \
  && git checkout 612fe3e040d8bb70d2ab3b133f3b2cfc6c940520 \
  && rm -rf .git \
  && chmod u+x /home/renderer/src/regional/trim_osc.py
+
+ # Install tiles-with-data
+RUN mkdir -p /home/renderer/src \
+ && cd /home/renderer/src \
+ && git clone -b master --recursive https://github.com/dbahrdt/tiles-with-data.git \
+ && apt-get update && apt-get install -y --no-install-recommends \
+ && cmake -S tiles-with-data -B build -DCMAKE_BUILD_TYPE=Release \
+ && cmake --build build -- -j4 \
+ && cp build/tiles-with-data /usr/bin \
+ && chmod +x tiles-with-data \
+ && rm -rf tiles-with-data build
 
 # Configure renderd
 RUN sed -i 's/renderaccount/renderer/g' /usr/local/etc/renderd.conf \

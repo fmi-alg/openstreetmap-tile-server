@@ -62,6 +62,22 @@ The map name is defined in `/usr/local/etc/renderd.conf`.
 You can find bounding boxes for countries at the following [gist](https://gist.github.com/graydon/11198540).
 You can also use the [tile calculator](https://tools.geofabrik.de/calc/) to compute the needed storage space and retrieve bounding boxes.
 
+### Advanced
+
+Prerendering the planet dataset this way results in a lot of tiles that show the ocean.
+You can restrict the prerendering to tiles that contain data in the form of nodes with the [tiles-with-data](https://github.com/dbahrdt/tiles-with-data) program.
+The program gives you a list of tiles containing at least one node.
+This list can then be passed to render_list.
+
+```bash
+docker-compose -f docker-compose.yml exec map /bin/bash
+tiles-with-data -f /data.osm.pbf -z 11 -t 4 | render_list -f -m ajt -n 8
+```
+
+Note that you should map an appropriate osm.pbf file under /data.osm.pbf.
+The program is very simple and may need a rather large amount of memory.
+For each tile to be rendered it needs roughly 8 Bytes of memory.
+
 ## Serving tiles
 
 In order to serve tiles you have to edit the files `docker-compose.yml` and `cfg/postgresql.serve.conf.tmpl` to your needs.
