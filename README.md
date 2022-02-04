@@ -208,6 +208,59 @@ It might be that you will have to experimentally find the best values for yourse
 You may be running into problems with memory usage during the import.
 Have a look at the "Flat nodes" section in this README.
 
+## Internals
+
+### run.sh
+
+The entrypoint of the docker container is the `run.sh` script.
+It takes care of executing the commands given on the command line.
+We will describe the `import` and `run`commands in the following.
+
+#### run.sh run
+
+The run command starts the following daemons:
+
+* Apache
+* renderd
+* cron
+* Postgres
+
+The Apache webserver is used to serve the tiles.
+The renderd daemon renders the tiles.
+Cron is used to do updates and is only active if updates are enabled.
+The crontab is defined in the Dockerfile.
+The postgres database is needed by renderd to render files and the update process to update the database.
+
+#### run.sh import
+
+The import command starts the following daemons:
+
+* Postgres
+
+It is used to import an osm.pbf file into a postgres database.
+The data is either downloaded or an existing file is used.
+
+### Configuration
+
+The database can be configured by mounting an appropriate file to `/etc/postgresql/current/main/postgresql.custom.conf.tmpl`.
+This file is used by the `import` and `run` commands to create the final postgres configuration file.
+The postgres configuration file is created on each container start from scratch.
+Hence it is possible to change the postgres configuration file by mapping another file template.
+This mechanism is used by the `docker-compose.{import,prerender}.yml` files.
+They simple set another configuration file located in the `cfg` folder.
+This makes it ease to have multiple configurations in parallel, each with a task specific set of settings.
+
+### openstreetmap-tiles-update-expire
+
+This script is used to update the database and is run by cron.
+It is run every 30 minutes as defined by the crontab of the Dockerfile.
+It roughly does the following in order:
+
+1. Download changes
+2. Prune changes using data.poly if available
+3. Import changes into database
+4. Rerender all tiles with changed data
+
 ## License
 
 ```
