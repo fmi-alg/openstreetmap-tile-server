@@ -84,6 +84,39 @@ ALLOW_CORS=enabled
 
 ## Advanced usage
 
+### Cleaning all files
+
+You can clean all files using the following command.
+This may be helpful if an import fails or if you want to import a new data set.
+
+```bash
+docker-compose -f docker-compose.yml -f docker-compose.clean.yml up
+```
+
+### Remove Database, but keep Tiles
+
+You can clean the database using the following command.
+This may be helpful if you only want to import a new database but keep the tiles already rendered.
+
+```bash
+docker-compose -f docker-compose.yml -f docker-compose.cleandb.yml up
+```
+
+This has the advantage that your tile server will serve the old tiles while they are still new enough.
+It will not work correctly if you have updates enabled and import a dataset that is newer than the former database.
+In that case some tiles that have changed data will not get rerendered.
+You can retrieve the last valid timestamp of your database from the osmosis state:
+
+```bash
+$ docker-compose -f docker-compose exec map cat /var/lib/mod_tile/.osmosis/last.state.txt
+#Fri Feb 04 00:00:09 UTC 2022
+sequenceNumber=4917054
+timestamp=2022-02-03T23\:59\:13Z
+```
+
+Use this information to get a dataset that is older than the timestamp.
+If the time differs by more than a month then it may be better to rerender all tiles.
+
 ### Connecting to Postgres
 
 To connect to the PostgreSQL database inside the container, make sure to expose port 5432 in the docker-compose file.
