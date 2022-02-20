@@ -6,7 +6,7 @@ set -x
 
 function createPostgresConfig() {
   cp /etc/postgresql/current/main/postgresql.custom.conf.tmpl /etc/postgresql/current/main/conf.d/postgresql.custom.conf || exit 1
-  sudo -u postgres echo "autovacuum = $AUTOVACUUM" >> /etc/postgresql/current/main/conf.d/postgresql.custom.conf || exit 1
+  sudo -u postgres echo -e "\nautovacuum = $AUTOVACUUM\n" >> /etc/postgresql/current/main/conf.d/postgresql.custom.conf || exit 1
   cat /etc/postgresql/current/main/conf.d/postgresql.custom.conf
 }
 
