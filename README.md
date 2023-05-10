@@ -32,6 +32,10 @@ You may also provide the data if you have already downloaded it.
 See `docker-compose.import.yml` for instructions.
 Note that you have to set the `UPDATE` option to `enabled` during the initial import if you want to update the database at a later stage.
 
+Note that the import process requires an internet connection. The run process does not require an internet connection. If you want to run the openstreetmap-tile server on a computer that is isolated, you must first import on an internet connected computer, export the `osm-data` volume as a tarfile, and then restore the data volume on the target computer system.
+
+Also when running on an isolated system, the default `index.html` from the container will not work, as it requires access to the web for the leaflet packages.
+
 ## Pre-render data
 
 Pre-rendering data is an import step to improve the usability of a map service.
@@ -76,6 +80,80 @@ Note that you should map an appropriate osm.pbf file under /data.osm.pbf.
 The program is very simple and may need a rather large amount of memory.
 For each tile to be rendered it needs roughly 8 Bytes of memory.
 
+### Automatic updates (optional)
+
+If your import is an extract of the planet and has polygonal bounds associated with it, like those from [geofabrik.de](https://download.geofabrik.de/), then it is possible to set your server up for automatic updates. Make sure to reference both the OSM file and the polygon file during the `import` process to facilitate this, and also include the `UPDATES=enabled` variable in `docker-compose.yml`.
+
+Please note: If you're not importing the whole planet, then the `.poly` file is necessary to limit automatic updates to the relevant region.
+Therefore, when you only have a `.osm.pbf` file but not a `.poly` file, you should not enable automatic updates.
+
+### Letting the container download the file
+
+It is also possible to let the container download files for you rather than mounting them in advance by using the `DOWNLOAD_PBF` and `DOWNLOAD_POLY` parameters:
+
+```
+docker run \
+    -e DOWNLOAD_PBF=https://download.geofabrik.de/europe/luxembourg-latest.osm.pbf \
+    -e DOWNLOAD_POLY=https://download.geofabrik.de/europe/luxembourg.poly \
+    -v osm-data:/data/database/ \
+    overv/openstreetmap-tile-server \
+    import
+```
+
+### Using an alternate style
+
+By default the container will use openstreetmap-carto if it is not specified. However, you can modify the style at run-time. Be aware you need the style mounted at `run` AND `import` as the Lua script needs to be run:
+
+```
+docker run \
+    -e DOWNLOAD_PBF=https://download.geofabrik.de/europe/luxembourg-latest.osm.pbf \
+    -e DOWNLOAD_POLY=https://download.geofabrik.de/europe/luxembourg.poly \
+    -e NAME_LUA=sample.lua \
+    -e NAME_STYLE=test.style \
+    -e NAME_MML=project.mml \
+    -e NAME_SQL=test.sql \
+    -v /home/user/openstreetmap-carto-modified:/data/style/ \
+    -v osm-data:/data/database/ \
+    overv/openstreetmap-tile-server \
+    import
+```
+
+If you do not define the "NAME_*" variables, the script will default to those found in the openstreetmap-carto style.
+
+Be sure to mount the volume during `run` with the same `-v /home/user/openstreetmap-carto-modified:/data/style/`
+
+If you do not see the expected style upon `run` double check your paths as the style may not have been found at the directory specified. By default, `openstreetmap-carto` will be used if a style cannot be found
+
+**Only openstreetmap-carto and styles like it, eg, ones with one lua script, one style, one mml, one SQL can be used**
+
+## Running the server
+
+Run the server like this:
+
+```
+docker run \
+    -p 8080:80 \
+    -v osm-data:/data/database/ \
+    -d overv/openstreetmap-tile-server \
+    run
+```
+
+### Preserving rendered tiles
+
+Tiles that have already been rendered will be stored in `/data/tiles/`. To make sure that this data survives container restarts, you should create another volume for it:
+
+```
+docker volume create osm-tiles
+docker run \
+    -p 8080:80 \
+    -v osm-data:/data/database/ \
+    -v osm-tiles:/data/tiles/ \
+    -d overv/openstreetmap-tile-server \
+    run
+```
+
+**If you do this, then make sure to also run the import with the `osm-tiles` volume to make sure that caching works properly across updates!**
+
 ## Serving tiles
 
 In order to serve tiles you have to edit the files `docker-compose.yml` and `cfg/postgresql.serve.conf.tmpl` to your needs.
@@ -87,6 +165,29 @@ docker-compose -f docker-compose.yml up -d
 
 Your tiles will now be available at `http://localhost:3080/tile/{z}/{x}/{y}.png`.
 The demo map in `leaflet-demo.html` will then be available on `http://localhost:3080`.
+
+### Tile expiration (optional)
+
+Specify custom tile expiration settings to control which zoom level tiles are marked as expired when an update is performed. Tiles can be marked as expired in the cache (TOUCHFROM), but will still be served
+until a new tile has been rendered, or deleted from the cache (DELETEFROM), so nothing will be served until a new tile has been rendered.
+
+The example tile expiration values below are the default values.
+
+```
+docker run \
+    -p 8080:80 \
+    -e REPLICATION_URL=https://planet.openstreetmap.org/replication/minute/ \
+    -e MAX_INTERVAL_SECONDS=60 \
+    -e UPDATES=enabled \
+    -e EXPIRY_MINZOOM=13 \
+    -e EXPIRY_TOUCHFROM=13 \
+    -e EXPIRY_DELETEFROM=19 \
+    -e EXPIRY_MAXZOOM=20 \
+    -v osm-data:/data/database/ \
+    -v osm-tiles:/data/tiles/ \
+    -d overv/openstreetmap-tile-server \
+    run
+```
 
 ### Cross-origin resource sharing
 
@@ -141,7 +242,7 @@ Use the user `renderer` and the database `gis` to connect.
 psql -h localhost -U renderer gis
 ```
 
-The default password is `renderer`, but it can be changed using the `PGPASSWORD` environment variable:
+The default password is `renderer`, but it can be changed using the `PGPASSWORD` environment variable.
 
 ## Performance tuning and tweaking
 
@@ -170,25 +271,28 @@ For example:
 AUTOVACUUM=off
 ```
 
-### Flat nodes
+### FLAT_NODES
 
 If you are planning to import the entire planet or you are running into memory errors then you may want to enable the `--flat-nodes` option for osm2pgsql.
 You can then use it during the import process as follows:
 
 ```yaml
-OSM2PGSQL_EXTRA_ARGS=--flat-nodes /nodes/flat_nodes.bin
+FLAT_NODES=enabled
 ```
 
-> Note that if you use a folder other than `/nodes` then you must make sure that you manually set the owner to `renderer`!
+Warning: enabling `FLAT_NOTES` together with `UPDATES` only works for entire planet imports (without a `.poly` file).  Otherwise this will break the automatic update script. This is because trimming the differential updates to the specific regions currently isn't supported when using flat nodes.
+
+### Benchmarks
+
+You can find an example of the import performance to expect with this image on the [OpenStreetMap wiki](https://wiki.openstreetmap.org/wiki/Osm2pgsql/benchmarks#debian_9_.2F_openstreetmap-tile-server).
 
 ## Troubleshooting
 
 ### ERROR: could not resize shared memory segment / No space left on device
 
 If you encounter such entries in the log, it will mean that the default shared memory limit (64 MB) is too low for the container and it should be raised:
-
-```bash
-renderd[121]: ERROR: failed to render TILE ajt 2 0-3 0-3
+```
+renderd[121]: ERROR: failed to render TILE default 2 0-3 0-3
 renderd[121]: reason: Postgis Plugin: ERROR: could not resize shared memory segment "/PostgreSQL.790133961" to 12615680 bytes: ### No space left on device
 ```
 
