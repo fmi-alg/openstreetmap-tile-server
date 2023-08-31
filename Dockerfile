@@ -55,6 +55,8 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 RUN apt-get update \
 && apt-get install -y --no-install-recommends \
  apache2 \
+ build-essential \
+ cmake \
  cron \
  dateutils \
  fonts-hanazono \
@@ -65,6 +67,7 @@ RUN apt-get update \
  gnupg2 \
  gdal-bin \
  liblua5.3-dev \
+ libprotobuf-dev \
  lua5.3 \
  mapnik-utils \
  npm \
@@ -75,6 +78,7 @@ RUN apt-get update \
  postgresql-$PG_VERSION-postgis-3 \
  postgresql-$PG_VERSION-postgis-3-scripts \
  postgis \
+ protobuf-compiler \
  python-is-python3 \
  python3-mapnik \
  python3-lxml \
@@ -84,6 +88,7 @@ RUN apt-get update \
  renderd \
  sudo \
  vim \
+ zlib1g-dev \
 && apt-get clean autoclean \
 && apt-get autoremove --yes \
 && rm -rf /var/lib/{apt,dpkg,cache,log}/
@@ -187,6 +192,7 @@ COPY --from=compiler-stylesheet /root/openstreetmap-carto /home/renderer/src/ope
 # Start running
 RUN echo "PG_VERSION=${PG_VERSION}" > /run.env.sh 
 COPY run.sh /
+COPY indexes.sql /
 ENTRYPOINT ["/run.sh"]
 CMD []
 EXPOSE 80 5432
