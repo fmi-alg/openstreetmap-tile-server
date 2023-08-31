@@ -5,15 +5,15 @@ services:
     image: dbahrdt/openstreetmap-tile-server
     volumes:
       # Either use volumes which are also defined below or use host paths
-      - osm-tileserver-db:/var/lib/postgresql
-      - osm-tileserver-nodes:/nodes
-      - osm-tileserver-tiles:/var/lib/mod_tile
-      - osm-tileserver-logs:/var/log
+      # - osm-tileserver-db:/var/lib/postgresql
+      # - osm-tileserver-nodes:/nodes
+      # - osm-tileserver-tiles:/var/lib/mod_tile
+      # - osm-tileserver-logs:/var/log
       # Sample host paths:
-      # - /data/osm/tileserver/db:/var/lib/postgresql
-      # - /data/osm/tileserver/nodes:/nodes
-      # - /data/osm/tileserver/tiles:/var/lib/mod_tile
-      # - /data/osm/tileserver/logs:/var/log
+      - /data/osm/tileserver/db:/var/lib/postgresql
+      - /data/osm/tileserver/nodes:/nodes
+      - /data/osm/tileserver/tiles:/var/lib/mod_tile
+      - /data/osm/tileserver/logs:/var/log
       - ./cfg/postgresql.serve.conf.tmpl:/etc/postgresql/current/main/postgresql.custom.conf.tmpl
       - ./scripts/render_list_geo.pl:/usr/bin/render_list_geo
     environment:
@@ -39,8 +39,8 @@ configs:
   postgres-serve-cfg:
     file: ./cfg/postgresql.prerender.conf.tmpl
 
-volumes:
-  osm-tileserver-db: {}
-  osm-tileserver-nodes: {}
-  osm-tileserver-tiles: {}
-  osm-tileserver-logs: {}
+#volumes:
+#  osm-tileserver-db: {}
+#  osm-tileserver-nodes: {}
+#  osm-tileserver-tiles: {}
+#  osm-tileserver-logs: {}
