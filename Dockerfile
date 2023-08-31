@@ -96,7 +96,7 @@ RUN apt-get update \
 # Install tiles-with-data
 RUN mkdir -p /home/renderer/src \
  && cd /home/renderer/src \
- && git clone -b master --recursive https://github.com/dbahrdt/tiles-with-data.git \
+ && git clone -b master --recursive https://github.com/fmi-alg/tiles-with-data.git \
  && apt-get update && apt-get install -y --no-install-recommends \
  && cmake -S tiles-with-data -B build -DCMAKE_BUILD_TYPE=Release \
  && cmake --build build -- -j4 \
