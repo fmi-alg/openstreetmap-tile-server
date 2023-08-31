@@ -5,12 +5,12 @@ services:
     image: dbahrdt/openstreetmap-tile-server
     volumes:
       # Either use volumes which are also defined below or use host paths
-      # - osm-tileserver-db:/var/lib/postgresql
+      # - osm-tileserver-db:/data/database
       # - osm-tileserver-nodes:/nodes
       # - osm-tileserver-tiles:/var/lib/mod_tile
       # - osm-tileserver-logs:/var/log
       # Sample host paths:
-      - /data/osm/tileserver/db:/var/lib/postgresql
+      - /data/osm/tileserver/db:/data/database
       - /data/osm/tileserver/nodes:/nodes
       - /data/osm/tileserver/tiles:/var/lib/mod_tile
       - /data/osm/tileserver/logs:/var/log

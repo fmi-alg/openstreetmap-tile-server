@@ -87,8 +87,8 @@ if [ "$1" == "import" ]; then
     mkdir -p /data/database/postgres/
     chown renderer: /data/database/
     chown -R postgres: /var/lib/postgresql /data/database/postgres/
-    if [ ! -f /data/database/postgres/${PG_VERSION}/main/PG_VERSION ]; then
-        sudo -u postgres /usr/lib/postgresql/$PG_VERSION/bin/pg_ctl -D /data/database/postgres/${PG_VERSION}/main/ initdb -o "--locale C.UTF-8"
+    if [ ! -f /data/database/postgres/PG_VERSION ]; then
+        sudo -u postgres /usr/lib/postgresql/$PG_VERSION/bin/pg_ctl -D /data/database/postgres/ initdb -o "--locale C.UTF-8" 
     fi
 
     # Initialize PostgreSQL
