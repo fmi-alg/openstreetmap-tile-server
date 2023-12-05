@@ -5,6 +5,7 @@ source /run.env.sh
 set -euo pipefail
 
 function createPostgresConfig() {
+  df -h /dev/shm
   cp /etc/postgresql/current/main/postgresql.custom.conf.tmpl /etc/postgresql/current/main/conf.d/postgresql.custom.conf
   sudo -u postgres echo -e "\nautovacuum = $AUTOVACUUM\n" >> /etc/postgresql/current/main/conf.d/postgresql.custom.conf
   cat /etc/postgresql/current/main/conf.d/postgresql.custom.conf
@@ -26,12 +27,12 @@ echo "IMPORT_THREADS=${IMPORT_THREADS}" >> /etc/osmtileserver-options.sh
 #Setup log files
 chown root:root /var/log
 chmod +rwX /var/log
-mkdir -p /var/log/apache2 && chown -R www-data:www-data /var/log/apache2
-touch /var/log/renderd.log && chown renderer:renderer /var/log/renderd.log
-mkdir -p /var/log/tiles && chown -R renderer:renderer /var/log/tiles
+mkdir -p /var/log/apache2 && chown -R www-data:www-data /var/log/apache2  || exit 1
+touch /var/log/renderd.log && chown renderer:renderer /var/log/renderd.log  || exit 1
+mkdir -p /var/log/tiles && chown -R renderer:renderer /var/log/tiles  || exit 1
 
 #Fix permissions
-chown -R renderer:renderer /nodes /var/lib/mod_tile 
+chown -R renderer:renderer /data/nodes /data/tiles 
 
 if [ "$#" -ne 1 ]; then
     echo "usage: <import|run|clean>"
@@ -54,18 +55,19 @@ fi
 
 if [ "$1" = "clean" ]; then
     echo "Cleaning all persistent storage locations"
-    rm -rf /var/lib/mod_tile/* > /dev/null 2>&1
-    rm -rf /var/lib/mod_tile/.osmosis > /dev/null 2>&1
-    rm -rf /var/lib/postgresql/* > /dev/null 2>&1
-    rm -rf /nodes/* > /dev/null 2>&1
+    rm -rf /data/style/* > /dev/null 2>&1
+    rm -rf /data/tiles/* > /dev/null 2>&1
+    rm -rf /data/tiles/.osmosis > /dev/null 2>&1
+    rm -rf /data/db/* > /dev/null 2>&1
+    rm -rf /data/nodes/* > /dev/null 2>&1
     rm -rf /debug/*  > /dev/null 2>&1
     exit 0
 fi
 
 if [ "$1" = "cleandb" ]; then
     echo "Cleaning data base related files"
-    rm -rf /var/lib/mod_tile/.osmosis > /dev/null 2>&1
-    rm -rf /var/lib/postgresql/* > /dev/null 2>&1
+    rm -rf /data/tiles/.osmosis > /dev/null 2>&1
+    rm -rf /data/db/* > /dev/null 2>&1
     exit 0
 fi
 
@@ -83,12 +85,13 @@ if [ ! -f /data/style/mapnik.xml ]; then
 fi
 
 if [ "$1" == "import" ]; then
+    mkdir -p /data/tiles/
+    chown renderer: /data/tiles/
     # Ensure that database directory is in right state
-    mkdir -p /data/database/postgres/
-    chown renderer: /data/database/
-    chown -R postgres: /var/lib/postgresql /data/database/postgres/
-    if [ ! -f /data/database/postgres/PG_VERSION ]; then
-        sudo -u postgres /usr/lib/postgresql/$PG_VERSION/bin/pg_ctl -D /data/database/postgres/ initdb -o "--locale C.UTF-8" 
+    mkdir -p /data/db/
+    chown -R postgres: /var/lib/postgresql /data/db/
+    if [ ! -f /data/db/PG_VERSION ]; then
+        sudo -u postgres /usr/lib/postgresql/$PG_VERSION/bin/pg_ctl -D /data/db/ initdb -o "--locale C.UTF-8"
     fi
 
     # Initialize PostgreSQL
@@ -128,13 +131,13 @@ if [ "$1" == "import" ]; then
 
     # copy polygon file if available
     if [ -f /data/region.poly ]; then
-        cp /data/region.poly /data/database/region.poly
-        chown renderer: /data/database/region.poly
+        cp /data/region.poly /data/tiles/region.poly
+        chown renderer: /data/tiles/region.poly
     fi
 
     # flat-nodes
     if [ "${FLAT_NODES:-}" == "enabled" ] || [ "${FLAT_NODES:-}" == "1" ]; then
-        OSM2PGSQL_EXTRA_ARGS="${OSM2PGSQL_EXTRA_ARGS:-} --flat-nodes /data/database/flat_nodes.bin"
+        OSM2PGSQL_EXTRA_ARGS="${OSM2PGSQL_EXTRA_ARGS:-} --flat-nodes /data/nodes/flat_nodes.bin"
     fi
 
     # Import data
@@ -147,12 +150,6 @@ if [ "$1" == "import" ]; then
         sudo -u renderer osm2pgsql "${OSM2PGSQL_OPTIONS[@]}"
     else
         sudo -u renderer osm2pgsql "${OSM2PGSQL_OPTIONS[@]}" --drop
-    fi
-
-    # old flat-nodes dir
-    if [ -f /nodes/flat_nodes.bin ] && ! [ -f /data/database/flat_nodes.bin ]; then
-        mv /nodes/flat_nodes.bin /data/database/flat_nodes.bin
-        chown renderer: /data/database/flat_nodes.bin
     fi
 
     # Create indexes
@@ -172,7 +169,7 @@ if [ "$1" == "import" ]; then
     popd
 
     # Register that data has changed for mod_tile caching purposes
-    sudo -u renderer touch /data/database/planet-import-complete
+    sudo -u renderer touch /data/tiles/planet-import-complete
 
     service postgresql stop
 
@@ -183,28 +180,8 @@ if [ "$1" == "run" ]; then
     # Clean /tmp
     rm -rf /tmp/*
 
-    # migrate old files
-    if [ -f /data/database/PG_VERSION ] && ! [ -d /data/database/postgres/ ]; then
-        mkdir /data/database/postgres/
-        mv /data/database/* /data/database/postgres/
-    fi
-    if [ -f /nodes/flat_nodes.bin ] && ! [ -f /data/database/flat_nodes.bin ]; then
-        mv /nodes/flat_nodes.bin /data/database/flat_nodes.bin
-    fi
-    if [ -f /data/tiles/data.poly ] && ! [ -f /data/database/region.poly ]; then
-        mv /data/tiles/data.poly /data/database/region.poly
-    fi
-
-    # sync planet-import-complete file
-    if [ -f /data/tiles/planet-import-complete ] && ! [ -f /data/database/planet-import-complete ]; then
-        cp /data/tiles/planet-import-complete /data/database/planet-import-complete
-    fi
-    if ! [ -f /data/tiles/planet-import-complete ] && [ -f /data/database/planet-import-complete ]; then
-        cp /data/database/planet-import-complete /data/tiles/planet-import-complete
-    fi
-
     # Fix postgres data privileges
-    chown -R postgres: /var/lib/postgresql/ /data/database/postgres/
+    chown -R postgres: /var/lib/postgresql/ /data/db/
 
     # Configure Apache CORS
     if [ "${ALLOW_CORS:-}" == "enabled" ] || [ "${ALLOW_CORS:-}" == "1" ]; then
@@ -212,7 +189,7 @@ if [ "$1" == "run" ]; then
     fi
 
     #Fix mod_tile data privileges
-    chown -R renderer:renderer /var/lib/mod_tile && chmod -R u=rwX,g=rX,o=rX /var/lib/mod_tile || exit 1
+    chown -R renderer:renderer /data/tiles && chmod -R u=rwX,g=rX,o=rX /data/tiles || exit 1
 
     # Initialize PostgreSQL and Apache
     createPostgresConfig
@@ -239,7 +216,7 @@ if [ "$1" == "run" ]; then
     }
     trap stop_handler SIGTERM
 
-    sudo -u renderer renderd -f -c /etc/renderd.conf &
+    sudo -u renderer renderd -f -c /etc/renderd.conf >> /var/log/renderd.log &
     child=$!
     wait "$child"
 

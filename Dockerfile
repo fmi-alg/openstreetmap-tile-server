@@ -161,18 +161,18 @@ RUN chown -R postgres:postgres /var/lib/postgresql \
 
 # Create volume directories
 RUN mkdir -p /run/renderd/ \
-  &&  mkdir  -p  /data/database/  \
+  &&  mkdir  -p  /data/db/  \
   &&  mkdir  -p  /data/style/  \
   &&  mkdir  -p  /home/renderer/src/  \
   &&  chown  -R  renderer:  /data/  \
   &&  chown  -R  renderer:  /home/renderer/src/  \
   &&  chown  -R  renderer:  /run/renderd  \
-  &&  mv  /var/lib/postgresql/$PG_VERSION/main/  /data/database/postgres/  \
+  &&  mv  /var/lib/postgresql/$PG_VERSION/main/  /data/db/  \
   &&  mv  /var/cache/renderd/tiles/            /data/tiles/     \
   &&  chown  -R  renderer: /data/tiles \
-  &&  ln  -s  /data/database/postgres  /var/lib/postgresql/$PG_VERSION/main             \
-  &&  ln  -s  /data/style              /home/renderer/src/openstreetmap-carto  \
-  &&  ln  -s  /data/tiles              /var/cache/renderd/tiles                \
+  &&  ln  -s  /data/db     /var/lib/postgresql/$PG_VERSION/main    \
+  &&  ln  -s  /data/style  /home/renderer/src/openstreetmap-carto  \
+  &&  ln  -s  /data/tiles  /var/cache/renderd/tiles                \
 ;
 
 RUN echo '[default] \n\

@@ -22,8 +22,8 @@ DBNAME=gis
 OSM2PGSQL_OPTIONS="-d $DBNAME -G --hstore --tag-transform-script /data/style/${NAME_LUA:-openstreetmap-carto.lua} --number-processes ${THREADS:-4} -S /data/style/${NAME_STYLE:-openstreetmap-carto.style} ${OSM2PGSQL_EXTRA_ARGS}"
 
 # flat-nodes
-if [ -f /data/database/flat_nodes.bin ]; then
-    OSM2PGSQL_OPTIONS="${OSM2PGSQL_OPTIONS} --flat-nodes /data/database/flat_nodes.bin"
+if [ -f /data/nodes/flat_nodes.bin ]; then
+    OSM2PGSQL_OPTIONS="${OSM2PGSQL_OPTIONS} --flat-nodes /data/nodes/flat_nodes.bin"
 fi
 
 #------------------------------------------------------------------------------
@@ -32,11 +32,11 @@ fi
 # See https://github.com/zverik/regional .
 # This area will usually correspond to the data originally loaded.
 #------------------------------------------------------------------------------
-TRIM_POLY_FILE="/data/database/region.poly"
+TRIM_POLY_FILE="/data/nodes/region.poly"
 TRIM_OPTIONS="-d $DBNAME"
 TRIM_REGION_OPTIONS="-p $TRIM_POLY_FILE"
 
-BASE_DIR=/data/database
+BASE_DIR=/data/tiles
 LOG_DIR=/var/log/tiles
 WORKOSM_DIR=$BASE_DIR/.osmosis
 

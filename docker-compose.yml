@@ -2,17 +2,19 @@ version: '3.6'
 
 services:
   map:
-    image: dbahrdt/openstreetmap-tile-server
+    image: fmi-alg/openstreetmap-tile-server
     volumes:
       # Either use volumes which are also defined below or use host paths
-      # - osm-tileserver-db:/data/database
-      # - osm-tileserver-nodes:/nodes
-      # - osm-tileserver-tiles:/var/lib/mod_tile
+      # - osm-tileserver-db:/data/db
+      # - osm-tileserver-nodes:/data/nodes
+      # - osm-tileserver-tiles:/data/tiles
+      # - osm-tileserver-style:/data/style
       # - osm-tileserver-logs:/var/log
       # Sample host paths:
-      - /data/osm/tileserver/db:/data/database
-      - /data/osm/tileserver/nodes:/nodes
-      - /data/osm/tileserver/tiles:/var/lib/mod_tile
+      - /data/osm/tileserver/db:/data/db
+      - /data/osm/tileserver/nodes:/data/nodes
+      - /data/osm/tileserver/tiles:/data/tiles
+      - /data/osm/tileserver/style:/data/style
       - /data/osm/tileserver/logs:/var/log
       - ./cfg/postgresql.serve.conf.tmpl:/etc/postgresql/current/main/postgresql.custom.conf.tmpl
       - ./scripts/render_list_geo.pl:/usr/bin/render_list_geo
@@ -22,13 +24,14 @@ services:
       - RENDER_THREADS=2
       - IMPORT_THREADS=2
       # If you import with flat nodes then you also have to set the flat nodes option during updates
+      - FLAT_NODES=enabled
       # However you may change the memory usage (-C)
-      - OSM2PGSQL_EXTRA_ARGS=-C 1024 --flat-nodes /nodes/flat_nodes.bin
+      - OSM2PGSQL_EXTRA_ARGS=-C 1024
       - ALLOW_CORS=enabled
     ports:
       - "3080:80"
     restart: "on-failure"
-    shm_size: 1G
+    shm_size: '1g'
     command: "run"
 
 configs:
@@ -43,4 +46,5 @@ configs:
 #  osm-tileserver-db: {}
 #  osm-tileserver-nodes: {}
 #  osm-tileserver-tiles: {}
+#  osm-tileserver-style: {}
 #  osm-tileserver-logs: {}

@@ -8,14 +8,16 @@ services:
       - ./cfg/postgresql.import.conf.tmpl:/etc/postgresql/current/main/postgresql.custom.conf.tmpl
       # Use the following if you don't want to download a file
       # Your have to disable the DOWNLOAD_* variables below in order for this to take effect
-      - /path/to/data.osm.pbf:/data.osm.pbf
-      - /path/to/data.poly:/data.poly
+      - /scratch/planet/data.osm.pbf:/data/region.osm.pbf
+      - /scratch/data.poly:/data/region.poly
     environment:
       - IMPORT_THREADS=8
-      - OSM2PGSQL_EXTRA_ARGS=-C 8192 --flat-nodes /nodes/flat_nodes.bin
+      - FLAT_NODES=enabled
+      # However you may change the memory usage (-C)
+      - OSM2PGSQL_EXTRA_ARGS=-C 8192
       # Use the following entries to automatically download data files
       # - DOWNLOAD_PBF=http://download.geofabrik.de/europe/andorra-latest.osm.pbf
       # - DOWNLOAD_POLY=http://download.geofabrik.de/europe/andorra.poly
-    shm_size: 16G
+    shm_size: '16g'
     restart: "no"
     command: "import"
