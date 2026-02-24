@@ -26,6 +26,8 @@ services:
       # However you may change the memory usage (-C)
       - OSM2PGSQL_EXTRA_ARGS=-C 1024
       - ALLOW_CORS=enabled
+      # Give DB startup more time to finish (e. g. when a DB recovery is running)
+      - PGCTLTIMEOUT=300
     ports:
       - "3080:80"
     restart: "on-failure"

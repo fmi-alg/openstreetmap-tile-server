@@ -19,7 +19,7 @@ OSM2PGSQL_BIN=osm2pgsql
 TRIM_BIN=/home/renderer/src/regional/trim_osc.py
 
 DBNAME=gis
-OSM2PGSQL_OPTIONS="-d $DBNAME -G --hstore --tag-transform-script /data/style/${NAME_LUA:-openstreetmap-carto.lua} --number-processes ${THREADS:-4} -S /data/style/${NAME_STYLE:-openstreetmap-carto.style} ${OSM2PGSQL_EXTRA_ARGS}"
+OSM2PGSQL_OPTIONS=( -d $DBNAME -G --hstore --tag-transform-script /data/style/${NAME_LUA:-openstreetmap-carto.lua} --number-processes ${THREADS:-4} -S /data/style/${NAME_STYLE:-openstreetmap-carto.style} "${OSM2PGSQL_EXTRA_ARGS}" )
 
 # flat-nodes
 if [ -f /data/nodes/flat_nodes.bin ]; then
@@ -172,7 +172,7 @@ m_ok "importing diff"
 # tiles in range to the list (note the "-" rather than ":" in the "-e"
 # parameter).
 #------------------------------------------------------------------------------
-    OSM2PGSQL_UPDATE_OPTIONS=( -a --slim -e$EXPIRY_MINZOOM-$EXPIRY_MAXZOOM "${OSM2PGSQL_OPTIONS[@]}" -o "$EXPIRY_FILE.$$" $CHANGE_FILE )
+    OSM2PGSQL_UPDATE_OPTIONS=( -a --slim -e$EXPIRY_MINZOOM-$EXPIRY_MAXZOOM "${OSM2PGSQL_OPTIONS[@]}" -r=xml -o "$EXPIRY_FILE.$$" $CHANGE_FILE )
     if ! $OSM2PGSQL_BIN "${OSM2PGSQL_UPDATE_OPTIONS[@]}" 1>&2 2> "$PGSQLLOG"; then
         m_error "osm2pgsql error. Command run: ${OSM2PGSQL_UPDATE_OPTIONS[@]}"
     fi

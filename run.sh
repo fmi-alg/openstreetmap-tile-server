@@ -22,6 +22,7 @@ echo "OSM2PGSQL_EXTRA_ARGS=($OSM2PGSQL_EXTRA_ARGS)" >> /etc/osmtileserver-option
 echo "RENDER_THREADS=${RENDER_THREADS}" >> /etc/osmtileserver-options.sh
 echo "UPDATE_THREADS=${UPDATE_THREADS}" >> /etc/osmtileserver-options.sh
 echo "IMPORT_THREADS=${IMPORT_THREADS}" >> /etc/osmtileserver-options.sh
+echo "PGCTLTIMEOUT = ${PGCTLTIMEOUT}" >> /etc/postgresql/current/main/environment
 
 
 #Setup log files
