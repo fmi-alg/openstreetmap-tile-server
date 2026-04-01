@@ -138,7 +138,7 @@ if [ "$1" == "import" ]; then
 
     # Import data
     OSM2PGSQL_OPTIONS=''
-    OSM2PGSQL_OPTIONS+="--d gis" # database name
+    OSM2PGSQL_OPTIONS+=" -d gis" # database name
     OSM2PGSQL_OPTIONS+=" --create" # create mode: Removes existing data from the database!
     OSM2PGSQL_OPTIONS+=" --slim" # Store temporary data in the database. Needed for limited
                                  # RAM and if you want your database to be updateable.
