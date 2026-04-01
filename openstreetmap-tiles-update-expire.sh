@@ -19,11 +19,19 @@ OSM2PGSQL_BIN=osm2pgsql
 TRIM_BIN=/home/renderer/src/regional/trim_osc.py
 
 DBNAME=gis
-OSM2PGSQL_OPTIONS=( -d $DBNAME -G --hstore --tag-transform-script /data/style/${NAME_LUA:-openstreetmap-carto.lua} --number-processes ${THREADS:-4} -S /data/style/${NAME_STYLE:-openstreetmap-carto.style} "${OSM2PGSQL_EXTRA_ARGS}" )
-
-# flat-nodes
+OSM2PGSQL_OPTIONS=''
+OSM2PGSQL_OPTIONS+="-d $DBNAME" # database name
+OSM2PGSQL_OPTIONS+=" -G" # Generate multi-geometry features in the PostgreSQL tables.
+OSM2PGSQL_OPTIONS+=" --hstore" # To give more flexibility in using additional tags.
+OSM2PGSQL_OPTIONS+=" --tag-transform-script=/data/style/${NAME_LUA:-openstreetmap-carto.lua}"
+                     # Lua script to handle tag filtering and normalisation.
+OSM2PGSQL_OPTIONS+=" --number-processes=${THREADS:-4}" # number of parallel threads
+OSM2PGSQL_OPTIONS+=" --style=/data/style/${NAME_STYLE:-openstreetmap-carto.style}"
+                     # The style specifies how the data is imported into the database.
+OSM2PGSQL_OPTIONS+=" $OSM2PGSQL_EXTRA_ARGS" # Specified in docker-compose*.yml
 if [ -f /data/nodes/flat_nodes.bin ]; then
-    OSM2PGSQL_OPTIONS="${OSM2PGSQL_OPTIONS} --flat-nodes /data/nodes/flat_nodes.bin"
+    OSM2PGSQL_OPTIONS+=" --flat-nodes=/data/nodes/flat_nodes.bin"
+    # Store slim mode node information the file instead of the main PostgreSQL database.
 fi
 
 #------------------------------------------------------------------------------
@@ -172,10 +180,17 @@ m_ok "importing diff"
 # tiles in range to the list (note the "-" rather than ":" in the "-e"
 # parameter).
 #------------------------------------------------------------------------------
-    OSM2PGSQL_UPDATE_OPTIONS=( -a --slim -e$EXPIRY_MINZOOM-$EXPIRY_MAXZOOM "${OSM2PGSQL_OPTIONS[@]}" -r=xml -o "$EXPIRY_FILE.$$" $CHANGE_FILE )
-    if ! $OSM2PGSQL_BIN "${OSM2PGSQL_UPDATE_OPTIONS[@]}" 1>&2 2> "$PGSQLLOG"; then
-        m_error "osm2pgsql error. Command run: ${OSM2PGSQL_UPDATE_OPTIONS[@]}"
-    fi
+OSM2PGSQL_UPDATE_OPTIONS=''
+OSM2PGSQL_UPDATE_OPTIONS+="-a" # append mode: Add change file without removing existing data.
+OSM2PGSQL_UPDATE_OPTIONS+=" --slim" # Store temporary data in the database. Needed for limited
+                                    # RAM and if you want your database to be updateable.
+OSM2PGSQL_UPDATE_OPTIONS+=" -e$EXPIRY_MINZOOM-$EXPIRY_MAXZOOM" # Create a tile expiry list.
+OSM2PGSQL_UPDATE_OPTIONS+=" ${OSM2PGSQL_OPTIONS}" # all the options from above
+OSM2PGSQL_UPDATE_OPTIONS+=" -o $EXPIRY_FILE.$$" # Output file name for expired tiles list.
+OSM2PGSQL_UPDATE_OPTIONS+=" $CHANGE_FILE" # OSM-FILE with the changes
+if ! $OSM2PGSQL_BIN ${OSM2PGSQL_UPDATE_OPTIONS} 1>&2 2> "$PGSQLLOG"; then
+    m_error "osm2pgsql error. Command run: ${OSM2PGSQL_UPDATE_OPTIONS}"
+fi
 
 #------------------------------------------------------------------------------
 # The lockfile is normally removed before we expire tiles because that is

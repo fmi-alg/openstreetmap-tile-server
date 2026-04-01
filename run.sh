@@ -18,7 +18,7 @@ function setPostgresPassword() {
 #Make env vars permanent
 echo "#!/bin/bash" > /etc/osmtileserver-options.sh
 echo "#Global osmtileserver options" >> /etc/osmtileserver-options.sh
-echo "OSM2PGSQL_EXTRA_ARGS=($OSM2PGSQL_EXTRA_ARGS)" >> /etc/osmtileserver-options.sh
+echo "OSM2PGSQL_EXTRA_ARGS=\"${OSM2PGSQL_EXTRA_ARGS}\"" >> /etc/osmtileserver-options.sh
 echo "RENDER_THREADS=${RENDER_THREADS}" >> /etc/osmtileserver-options.sh
 echo "UPDATE_THREADS=${UPDATE_THREADS}" >> /etc/osmtileserver-options.sh
 echo "IMPORT_THREADS=${IMPORT_THREADS}" >> /etc/osmtileserver-options.sh
@@ -136,22 +136,32 @@ if [ "$1" == "import" ]; then
         chown renderer: /data/tiles/region.poly
     fi
 
-    # flat-nodes
-    if [ "${FLAT_NODES:-}" == "enabled" ] || [ "${FLAT_NODES:-}" == "1" ]; then
-        OSM2PGSQL_EXTRA_ARGS="${OSM2PGSQL_EXTRA_ARGS:-} --flat-nodes /data/nodes/flat_nodes.bin"
-    fi
-
     # Import data
-    OSM2PGSQL_OPTIONS=( -d gis --create --slim -G --hstore
-                        --tag-transform-script /data/style/${NAME_LUA:-openstreetmap-carto.lua}
-                        --number-processes ${IMPORT_THREADS:-1}
-                        -S /data/style/${NAME_STYLE:-openstreetmap-carto.style} /data/region.osm.pbf
-                        "${OSM2PGSQL_EXTRA_ARGS[@]}" )
-    if [ "$UPDATES" = "enabled" ]; then
-        sudo -u renderer osm2pgsql "${OSM2PGSQL_OPTIONS[@]}"
-    else
-        sudo -u renderer osm2pgsql "${OSM2PGSQL_OPTIONS[@]}" --drop
+    OSM2PGSQL_OPTIONS=''
+    OSM2PGSQL_OPTIONS+="--d gis" # database name
+    OSM2PGSQL_OPTIONS+=" --create" # create mode: Removes existing data from the database!
+    OSM2PGSQL_OPTIONS+=" --slim" # Store temporary data in the database. Needed for limited
+                                 # RAM and if you want your database to be updateable.
+    OSM2PGSQL_OPTIONS+=" -G" # Generate multi-geometry features in the PostgreSQL tables.
+    OSM2PGSQL_OPTIONS+=" --hstore" # To give more flexibility in using additional tags.
+    OSM2PGSQL_OPTIONS+=" --tag-transform-script=/data/style/${NAME_LUA:-openstreetmap-carto.lua}"
+                         # Lua script to handle tag filtering and normalisation.
+    OSM2PGSQL_OPTIONS+=" --number-processes=${IMPORT_THREADS:-1}" # number of parallel threads
+    OSM2PGSQL_OPTIONS+=" --style=/data/style/${NAME_STYLE:-openstreetmap-carto.style}"
+                         # The style specifies how the data is imported into the database.
+    OSM2PGSQL_OPTIONS+=" ${OSM2PGSQL_EXTRA_ARGS}" # Specified in docker-compose*.yml
+    if [ "${FLAT_NODES:-}" == "enabled" ] || [ "${FLAT_NODES:-}" == "1" ]; then
+        OSM2PGSQL_OPTIONS+=" --flat-nodes=/data/nodes/flat_nodes.bin"
+       # Store slim mode node information the file instead of the main PostgreSQL database.
     fi
+    if [ "$UPDATES" != "enabled" ]; then
+        OSM2PGSQL_OPTIONS+=" --drop" # Drop the slim mode tables from the database and the
+                                     # flat node file once the import is complete.
+                                     # Slim mode tables however have to be persistent if
+                                     # you want to be able to update your database.
+    fi
+    OSM2PGSQL_OPTIONS+=" /data/region.osm.pbf" # The OSM-FILE to import.
+    sudo -u renderer osm2pgsql ${OSM2PGSQL_OPTIONS}
 
     # Create indexes
     if [ -f /data/style/${NAME_SQL:-indexes.sql} ]; then
@@ -204,10 +214,14 @@ if [ "$1" == "run" ]; then
     # start cron job to trigger consecutive updates
     if [ "${UPDATES:-}" == "enabled" ] || [ "${UPDATES:-}" == "1" ]; then
         /etc/init.d/cron start
-        sudo -u renderer touch /var/log/tiles/run.log; tail -f /var/log/tiles/run.log >> /proc/1/fd/1 &
-        sudo -u renderer touch /var/log/tiles/osmosis.log; tail -f /var/log/tiles/osmosis.log >> /proc/1/fd/1 &
-        sudo -u renderer touch /var/log/tiles/expiry.log; tail -f /var/log/tiles/expiry.log >> /proc/1/fd/1 &
-        sudo -u renderer touch /var/log/tiles/osm2pgsql.log; tail -f /var/log/tiles/osm2pgsql.log >> /proc/1/fd/1 &
+        sudo -u renderer touch /var/log/tiles/run.log
+        tail -f /var/log/tiles/run.log >> /proc/1/fd/1 &
+        sudo -u renderer touch /var/log/tiles/osmosis.log
+        tail -f /var/log/tiles/osmosis.log >> /proc/1/fd/1 &
+        sudo -u renderer touch /var/log/tiles/expiry.log
+        tail -f /var/log/tiles/expiry.log >> /proc/1/fd/1 &
+        sudo -u renderer touch /var/log/tiles/osm2pgsql.log
+        tail -f /var/log/tiles/osm2pgsql.log >> /proc/1/fd/1 &
 
     fi
 
