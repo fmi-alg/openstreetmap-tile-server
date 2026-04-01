@@ -192,7 +192,6 @@ COPY --from=compiler-stylesheet /root/openstreetmap-carto /home/renderer/src/ope
 # Start running
 RUN echo "PG_VERSION=${PG_VERSION}" > /run.env.sh 
 COPY run.sh /
-COPY indexes.sql /
 ENTRYPOINT ["/run.sh"]
 CMD []
 EXPOSE 80 5432
