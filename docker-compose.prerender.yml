@@ -1,7 +1,5 @@
 #Use with docker-compose -f docker-compose.yml -f docker-compose.prerender.yml up
 
-version: '3.6'
-
 services:
   map:
     volumes:
@@ -9,5 +7,7 @@ services:
       - ./scripts/render_list_geo.pl:/usr/bin/render_list_geo
     environment:
       - RENDER_THREADS=4
-      - OSM2PGSQL_EXTRA_ARGS=-C 4096 --flat-nodes /nodes/flat_nodes.bin
-    shm_size: 16G
+      - FLAT_NODES=enabled
+      # However you may change the memory usage (-C)
+      - OSM2PGSQL_EXTRA_ARGS=-C 8192
+    shm_size: '16g'

@@ -1,7 +1,5 @@
 #Use with docker-compose -f docker-compose.yml -f docker-compose.build.yml build
 
-version: '3.6'
-
 services:
   map:
     build: ./
