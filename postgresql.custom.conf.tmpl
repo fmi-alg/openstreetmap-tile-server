@@ -1,25 +1,27 @@
-# Suggested minimal settings from
-# https://ircama.github.io/osm-carto-tutorials/tile-server-ubuntu/
+# Suggested settings from
+# https://osm2pgsql.org/doc/manual.html#tuning-the-postgresql-server
 
-shared_buffers = 128MB
-min_wal_size = 1GB
-# max_wal_size = 2GB # Overridden below
-maintenance_work_mem = 256MB
+shared_buffers = 1GB
+work_mem = 50MB
+maintenance_work_mem = 10GB
+autovacuum_work_mem = 2GB
+wal_level = minimal
+checkpoint_timeout = 60min
+max_wal_size = 10GB
+checkpoint_completion_target = 0.9
+max_wal_senders = 0
+random_page_cost = 1.0
 
 # Suggested settings from
-# https://github.com/openstreetmap/chef/blob/master/roles/tile.rb#L38-L45
-
-max_connections = 250
-temp_buffers = 32MB
-work_mem = 128MB
-wal_buffers = 1024kB
-wal_writer_delay = 500ms
-commit_delay = 10000
-# checkpoint_segments = 60 # unrecognized in psql 10.7.1
-max_wal_size = 2880MB
-random_page_cost = 1.1
-track_activity_query_size = 16384
-autovacuum_vacuum_scale_factor = 0.05
-autovacuum_analyze_scale_factor = 0.02
+# https://github.com/openstreetmap/chef/blob/master/roles/tile.rb
+# We try the defaults for now.
+#max_connections = 250 # default: 100
+#temp_buffers = 32MB # default: 8MB
+#wal_buffers = 1024kB # default: -1, sets based on shared_buffers
+#wal_writer_delay = 500ms # default: 200ms
+#commit_delay = 10000 # default: 0
+#track_activity_query_size = 16384 # default: 1024
+#autovacuum_vacuum_scale_factor = 0.05 # default: 0.2
+#autovacuum_analyze_scale_factor = 0.02 # default: 0.1
 
 listen_addresses = '*'
