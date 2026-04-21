@@ -13,6 +13,8 @@ services:
       - FLAT_NODES=enabled
       # However you may change the memory usage (-C)
       - OSM2PGSQL_EXTRA_ARGS=-C 8192
+      # Use this variant on slow disks or less RAM:
+      # - OSM2PGSQL_EXTRA_ARGS=-C 1024 --disable-parallel-indexing
       # Use the following entries to automatically download data files
       # - DOWNLOAD_PBF=http://download.geofabrik.de/europe/andorra-latest.osm.pbf
       # - DOWNLOAD_POLY=http://download.geofabrik.de/europe/andorra.poly

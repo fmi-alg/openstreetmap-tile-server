@@ -25,13 +25,15 @@ services:
       - FLAT_NODES=enabled
       # However you may change the memory usage (-C)
       - OSM2PGSQL_EXTRA_ARGS=-C 1024
+      # Use this variant on slow disks or less RAM:
+      # - OSM2PGSQL_EXTRA_ARGS=-C 1024 --disable-parallel-indexing
       - ALLOW_CORS=enabled
       # Give DB startup more time to finish (e. g. when a DB recovery is running)
       - PGCTLTIMEOUT=300
     ports:
       - "3080:80"
-    restart: "on-failure"
-    shm_size: '1g'
+    restart: "unless-stopped"
+    shm_size: '8g'
     command: "run"
 
 configs:
