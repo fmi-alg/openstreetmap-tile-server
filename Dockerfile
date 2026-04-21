@@ -1,4 +1,4 @@
-FROM ubuntu:22.04 AS compiler-common
+FROM debian:trixie-slim AS compiler-common
 ENV DEBIAN_FRONTEND=noninteractive
 ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
@@ -7,10 +7,11 @@ RUN apt-get update \
 && apt-get install -y --no-install-recommends \
  ca-certificates gnupg lsb-release locales \
  wget curl \
- git-core unzip unrar \
+ git-core unzip unrar-free \
 && locale-gen $LANG && update-locale LANG=$LANG \
 && sh -c 'echo "deb [ trusted=yes ] https://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" | tee /etc/apt/sources.list.d/pgdg.list' \
-&& wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
+&& wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | \
+   gpg --dearmor -o /etc/apt/trusted.gpg.d/postgresql.gpg \
 && apt-get update && apt-get -y upgrade
 
 ###########################################################################################################
@@ -47,7 +48,7 @@ ENV AUTOVACUUM=on
 ENV UPDATES=disabled
 ENV REPLICATION_URL=https://planet.openstreetmap.org/replication/hour/
 ENV MAX_INTERVAL_SECONDS=3600
-ENV PG_VERSION 15
+ENV PG_VERSION 18
 
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
@@ -93,11 +94,12 @@ RUN apt-get update \
 && apt-get autoremove --yes \
 && rm -rf /var/lib/{apt,dpkg,cache,log}/
 
-# Install tiles-with-data
+## Install tiles-with-data
 RUN mkdir -p /home/renderer/src \
  && cd /home/renderer/src \
  && git clone -b master --recursive https://github.com/fmi-alg/tiles-with-data.git \
  && apt-get update && apt-get install -y --no-install-recommends \
+ && sed -i '/find_package(Protobuf REQUIRED CONFIG)/d' tiles-with-data/vendor/osmpbf/osmpbf/CMakeLists.txt \
  && cmake -S tiles-with-data -B build -DCMAKE_BUILD_TYPE=Release \
  && cmake --build build -- -j4 \
  && cp build/tiles-with-data /usr/bin \
@@ -114,10 +116,10 @@ RUN wget https://github.com/googlefonts/noto-emoji/blob/9a5261d871451f9b5183c934
 RUN wget https://github.com/stamen/terrain-classic/blob/master/fonts/unifont-Medium.ttf?raw=true --content-disposition -P /usr/share/fonts/
 
 # Install python libraries
-RUN pip3 install \
- requests \
- osmium \
- pyyaml
+RUN apt-get install -y --no-install-recommends \
+ python3-requests \
+ python3-pyosmium \
+ python3-yaml
 
 # Install carto for stylesheet
 RUN npm install -g node-gyp carto@1.2.0
@@ -142,22 +144,24 @@ RUN wget -O /var/www/html/favicon.ico https://www.openstreetmap.org/favicon.ico
 
 # Copy update scripts
 COPY openstreetmap-tiles-update-expire.sh /usr/bin/
-RUN chmod +x /usr/bin/openstreetmap-tiles-update-expire.sh \
+RUN update-rc.d cron remove \
+&& chmod +x /usr/bin/openstreetmap-tiles-update-expire.sh \
 && mkdir /var/log/tiles \
 && chmod a+rw /var/log/tiles \
 && ln -s /home/renderer/src/mod_tile/osmosis-db_replag /usr/bin/osmosis-db_replag \
 && echo "0  *    * * *   renderer    openstreetmap-tiles-update-expire.sh\n" >> /etc/crontab \
 && echo "30  *    * * *   renderer    openstreetmap-tiles-update-expire.sh\n" >> /etc/crontab
 
-# Configure PosgtreSQL
+# We use the version independent path in the docker-compose*.yml files
 RUN mv /etc/postgresql/${PG_VERSION} /etc/postgresql/current \
   && cd /etc/postgresql/ \
   && ln -s current ${PG_VERSION}
-COPY postgresql.custom.conf.tmpl /etc/postgresql/current/main/
+# Configure PosgtreSQL
+COPY postgresql.custom.conf.tmpl /etc/postgresql/$PG_VERSION/main/
 RUN chown -R postgres:postgres /var/lib/postgresql \
- && chown postgres:postgres /etc/postgresql/current/main/postgresql.custom.conf.tmpl \
- && echo "host all all 0.0.0.0/0 md5" >> /etc/postgresql/current/main/pg_hba.conf \
- && echo "host all all ::/0 md5" >> /etc/postgresql/current/main/pg_hba.conf
+&& chown postgres:postgres /etc/postgresql/$PG_VERSION/main/postgresql.custom.conf.tmpl \
+&& echo "host all all 0.0.0.0/0 scram-sha-256" >> /etc/postgresql/$PG_VERSION/main/pg_hba.conf \
+&& echo "host all all ::/0 scram-sha-256" >> /etc/postgresql/$PG_VERSION/main/pg_hba.conf
 
 # Create volume directories
 RUN mkdir -p /run/renderd/ \
@@ -182,7 +186,8 @@ XML=/home/renderer/src/openstreetmap-carto/mapnik.xml \n\
 HOST=localhost \n\
 TILESIZE=256 \n\
 MAXZOOM=20' >> /etc/renderd.conf \
- && sed -i 's,/usr/share/fonts/truetype,/usr/share/fonts,g' /etc/renderd.conf
+ && sed -i 's,/usr/share/fonts/truetype,/usr/share/fonts,g' /etc/renderd.conf \
+ && sed -i 's,/usr/lib/mapnik/3.1/input,/usr/lib/x86_64-linux-gnu/mapnik/4.0/input,g' /etc/renderd.conf
 
 # Install helper script
 COPY --from=compiler-helper-script /home/renderer/src/regional /home/renderer/src/regional
