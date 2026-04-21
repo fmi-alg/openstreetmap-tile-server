@@ -190,7 +190,6 @@ COPY --from=compiler-helper-script /home/renderer/src/regional /home/renderer/sr
 COPY --from=compiler-stylesheet /root/openstreetmap-carto /home/renderer/src/openstreetmap-carto-backup
 
 # Start running
-RUN echo "PG_VERSION=${PG_VERSION}" > /run.env.sh 
 COPY run.sh /
 ENTRYPOINT ["/run.sh"]
 CMD []

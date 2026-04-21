@@ -1,7 +1,5 @@
 #!/bin/bash
 
-source /run.env.sh
-
 set -euo pipefail
 
 function createPostgresConfig() {
