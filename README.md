@@ -6,12 +6,12 @@ It is based on the [latest Ubuntu 20.04 LTS guide](https://github.com/switch2osm
 ## Building the Image
 
 ```bash
-docker-compose -f docker-compose.yml -f docker-compose.build.yml build
+docker compose -f docker-compose.yml -f docker-compose.build.yml build
 ```
 
 ## Setting up the server
 
-Configure the docker-compose file according to your needs.
+Configure the docker compose file according to your needs.
 At the minimum you only have to edit the uri in `docker-compose.import.yml`.
 However you may want to define host paths to store data instead of using volumes.
 You also may want to change the allocated resources like maximum memory usage or number of threads.
@@ -24,7 +24,7 @@ Edit the postgres configuration `cfg/postgresql.import.conf.tmpl` to speed up th
 Start the import as follows:
 
 ```bash
-docker-compose -f docker-compose.yml -f docker-compose.import.yml up
+docker compose -f docker-compose.yml -f docker-compose.import.yml up
 ```
 
 This will download the file as specified by the `DOWNLOAD_PBF` variable and import the data into the database.
@@ -44,19 +44,19 @@ You likely want to increase the used resources during pre-rendering to speed up 
 Start the server:
 
 ```bash
-docker-compose -f docker-compose.yml -f docker-compose.prerender.yml up -d
+docker compose -f docker-compose.yml -f docker-compose.prerender.yml up -d
 ```
 
 You can use the render_list_geo script to select the tiles to be rendered:
 
 ```bash
-docker-compose exec map /usr/bin/render_list_geo -h
+docker compose exec map /usr/bin/render_list_geo -h
 ```
 
 To render all tiles of Andorra up to zoom level 18 with 4 threads:
 
 ```bash
-docker-compose exec map /usr/bin/render_list_geo -m ajt -n 4 -x 1.4135781 -X 1.7863837 -y 42.4288238 -Y 42.6559357 -z 0 -Z 18
+docker compose exec map /usr/bin/render_list_geo -m ajt -n 4 -x 1.4135781 -X 1.7863837 -y 42.4288238 -Y 42.6559357 -z 0 -Z 18
 ```
 
 Note the option `-m ajt` which is needed to select the correct map.
@@ -72,7 +72,7 @@ The program gives you a list of tiles containing at least one node.
 This list can then be passed to render_list.
 
 ```bash
-docker-compose -f docker-compose.yml exec map /bin/bash
+docker compose -f docker-compose.yml exec map /bin/bash
 tiles-with-data -f /data.osm.pbf -z 11 -t 4 | render_list -f -m ajt -n 8
 ```
 
@@ -160,7 +160,7 @@ In order to serve tiles you have to edit the files `docker-compose.yml` and `cfg
 Then start the container:
 
 ```bash
-docker-compose -f docker-compose.yml up -d
+docker compose -f docker-compose.yml up -d
 ```
 
 Your tiles will now be available at `http://localhost:3080/tile/{z}/{x}/{y}.png`.
@@ -205,7 +205,7 @@ You can clean all files using the following command.
 This may be helpful if an import fails or if you want to import a new data set.
 
 ```bash
-docker-compose -f docker-compose.yml -f docker-compose.clean.yml up
+docker compose -f docker-compose.yml -f docker-compose.clean.yml up
 ```
 
 ### Remove Database, but keep Tiles
@@ -214,7 +214,7 @@ You can clean the database using the following command.
 This may be helpful if you only want to import a new database but keep the tiles already rendered.
 
 ```bash
-docker-compose -f docker-compose.yml -f docker-compose.cleandb.yml up
+docker compose -f docker-compose.yml -f docker-compose.cleandb.yml up
 ```
 
 This has the advantage that your tile server will serve the old tiles while they are still new enough.
@@ -223,7 +223,7 @@ In that case some tiles that have changed data will not get rerendered.
 You can retrieve the last valid timestamp of your database from the osmosis state:
 
 ```bash
-$ docker-compose -f docker-compose exec map cat /var/lib/mod_tile/.osmosis/last.state.txt
+$ docker compose -f docker-compose.yml exec map cat /data/tiles/.osmosis/last.state.txt
 #Fri Feb 04 00:00:09 UTC 2022
 sequenceNumber=4917054
 timestamp=2022-02-03T23\:59\:13Z

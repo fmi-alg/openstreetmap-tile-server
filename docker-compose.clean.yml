@@ -1,4 +1,4 @@
-#Use with docker-compose -f docker-compose.yml -f docker-compose.clean.yml up
+#Use with docker compose -f docker-compose.yml -f docker-compose.clean.yml up
 
 services:
   map:
