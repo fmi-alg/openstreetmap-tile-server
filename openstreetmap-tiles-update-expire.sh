@@ -20,13 +20,10 @@ TRIM_BIN=/home/renderer/src/regional/trim_osc.py
 
 DBNAME=gis
 OSM2PGSQL_OPTIONS=''
-OSM2PGSQL_OPTIONS+="-d $DBNAME" # database name
-OSM2PGSQL_OPTIONS+=" -G" # Generate multi-geometry features in the PostgreSQL tables.
-OSM2PGSQL_OPTIONS+=" --hstore" # To give more flexibility in using additional tags.
-OSM2PGSQL_OPTIONS+=" --tag-transform-script=/data/style/${NAME_LUA:-openstreetmap-carto.lua}"
-                     # Lua script to handle tag filtering and normalisation.
+OSM2PGSQL_OPTIONS+='-O flex' # the flex output
+OSM2PGSQL_OPTIONS+=" -d $DBNAME" # database name
 OSM2PGSQL_OPTIONS+=" --number-processes=${THREADS:-4}" # number of parallel threads
-OSM2PGSQL_OPTIONS+=" --style=/data/style/${NAME_STYLE:-openstreetmap-carto.style}"
+OSM2PGSQL_OPTIONS+=" --style=/data/style/${NAME_LUA:-openstreetmap-carto-flex.lua}"
                      # The style specifies how the data is imported into the database.
 OSM2PGSQL_OPTIONS+=" $OSM2PGSQL_EXTRA_ARGS" # Specified in docker-compose*.yml
 if [ -f /data/nodes/flat_nodes.bin ]; then

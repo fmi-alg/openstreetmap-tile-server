@@ -45,10 +45,11 @@ if [ "$#" -ne 1 ]; then
     echo "    RENDER_THREADS: defines number of threads used for rendering"
     echo "    UPDATE_THREADS: defines number of threads used for updating"
     echo "    UPDATES: consecutive updates (enabled/disabled)"
-    echo "    NAME_LUA: name of .lua script to run as part of the style"
-    echo "    NAME_STYLE: name of the .style to use"
+    echo "    NAME_LUA: name of .lua style script"
     echo "    NAME_MML: name of the .mml file to render to mapnik.xml"
-    echo "    NAME_SQL: name of the .sql file to use"
+    echo "    NAME_INDEXES_SQL: name of the indexes.sql file to use"
+    echo "    NAME_FUNCTIONS_SQL: name of the functions.sql file to use"
+    echo "    NAME_TABLES_SQL: name of the common-values.sql file to use"
     exit 1
 fi
 
@@ -136,16 +137,13 @@ if [ "$1" == "import" ]; then
 
     # Import data
     OSM2PGSQL_OPTIONS=''
+    OSM2PGSQL_OPTIONS+='-O flex' # the flex output
     OSM2PGSQL_OPTIONS+=" -d gis" # database name
     OSM2PGSQL_OPTIONS+=" --create" # create mode: Removes existing data from the database!
     OSM2PGSQL_OPTIONS+=" --slim" # Store temporary data in the database. Needed for limited
                                  # RAM and if you want your database to be updateable.
-    OSM2PGSQL_OPTIONS+=" -G" # Generate multi-geometry features in the PostgreSQL tables.
-    OSM2PGSQL_OPTIONS+=" --hstore" # To give more flexibility in using additional tags.
-    OSM2PGSQL_OPTIONS+=" --tag-transform-script=/data/style/${NAME_LUA:-openstreetmap-carto.lua}"
-                         # Lua script to handle tag filtering and normalisation.
     OSM2PGSQL_OPTIONS+=" --number-processes=${IMPORT_THREADS:-1}" # number of parallel threads
-    OSM2PGSQL_OPTIONS+=" --style=/data/style/${NAME_STYLE:-openstreetmap-carto.style}"
+    OSM2PGSQL_OPTIONS+=" --style=/data/style/${NAME_LUA:-openstreetmap-carto-flex.lua}"
                          # The style specifies how the data is imported into the database.
     OSM2PGSQL_OPTIONS+=" ${OSM2PGSQL_EXTRA_ARGS}" # Specified in docker-compose*.yml
     if [ "${FLAT_NODES:-}" == "enabled" ] || [ "${FLAT_NODES:-}" == "1" ]; then
@@ -162,8 +160,16 @@ if [ "$1" == "import" ]; then
     sudo -u renderer osm2pgsql ${OSM2PGSQL_OPTIONS}
 
     # Create indexes
-    if [ -f /data/style/${NAME_SQL:-indexes.sql} ]; then
-        sudo -u postgres psql -d gis -f /data/style/${NAME_SQL:-indexes.sql}
+    if [ -f /data/style/${NAME_INDEXES_SQL:-indexes.sql} ]; then
+        sudo -u renderer psql -d gis -f /data/style/${NAME_INDEXES_SQL:-indexes.sql}
+    fi
+    # Load database functions
+    if [ -f /data/style/${NAME_FUNCTIONS_SQL:-functions.sql} ]; then
+        sudo -u renderer psql -d gis -f /data/style/${NAME_FUNCTIONS_SQL:-functions.sql}
+    fi
+    # Additional database tables
+    if [ -f /data/style/${NAME_TABLES_SQL:-common-values.sql} ]; then
+        sudo -u renderer psql -d gis -f /data/style/${NAME_TABLES_SQL:-common-values.sql}
     fi
 
     #Import external data
