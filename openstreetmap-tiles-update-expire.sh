@@ -169,7 +169,6 @@ if [ -f $TRIM_POLY_FILE ] ; then
 else
   m_ok "filtering diff skipped"
 fi
-m_ok "importing diff"
 
 #------------------------------------------------------------------------------
 # Previously openstreetmap-tiles-update-expire tried to dirty layer
@@ -185,9 +184,15 @@ OSM2PGSQL_UPDATE_OPTIONS+=" -e$EXPIRY_MINZOOM-$EXPIRY_MAXZOOM" # Create a tile e
 OSM2PGSQL_UPDATE_OPTIONS+=" ${OSM2PGSQL_OPTIONS}" # all the options from above
 OSM2PGSQL_UPDATE_OPTIONS+=" -o $EXPIRY_FILE.$$" # Output file name for expired tiles list.
 OSM2PGSQL_UPDATE_OPTIONS+=" $CHANGE_FILE" # OSM-FILE with the changes
-if ! $OSM2PGSQL_BIN ${OSM2PGSQL_UPDATE_OPTIONS} 1>&2 2> "$PGSQLLOG"; then
-    m_error "osm2pgsql error. Command run: ${OSM2PGSQL_UPDATE_OPTIONS}"
-fi
+if [ $# -eq 1 ] ; then # just initializing, don't call OSM2PGSQL as it won't work anyhow
+    m_ok "just initializing, importing diff skipped"
+    exit
+else
+    m_ok "importing diff"
+    if ! $OSM2PGSQL_BIN ${OSM2PGSQL_UPDATE_OPTIONS} 1>&2 2> "$PGSQLLOG"; then
+        m_error "osm2pgsql error. Command run: ${OSM2PGSQL_UPDATE_OPTIONS}"
+    fi
+fi  
 
 #------------------------------------------------------------------------------
 # The lockfile is normally removed before we expire tiles because that is
