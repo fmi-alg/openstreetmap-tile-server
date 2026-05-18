@@ -22,7 +22,7 @@ DBNAME=gis
 OSM2PGSQL_OPTIONS=''
 OSM2PGSQL_OPTIONS+='-O flex' # the flex output
 OSM2PGSQL_OPTIONS+=" -d $DBNAME" # database name
-OSM2PGSQL_OPTIONS+=" --number-processes=${THREADS:-4}" # number of parallel threads
+OSM2PGSQL_OPTIONS+=" --number-processes=${UPDATE_THREADS:-4}" # number of parallel threads
 OSM2PGSQL_OPTIONS+=" --style=/data/style/${NAME_LUA:-openstreetmap-carto-flex.lua}"
                      # The style specifies how the data is imported into the database.
 OSM2PGSQL_OPTIONS+=" $OSM2PGSQL_EXTRA_ARGS" # Specified in docker-compose*.yml
